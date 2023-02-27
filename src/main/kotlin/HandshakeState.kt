@@ -26,6 +26,7 @@ data class HandshakeState(
 
     fun writeMessage(payload: Payload) = let {
         val init: State<HandshakeState, Data>? = State(this, Data.empty())
+        println("Writing ${messagePatterns.first()}")
         val state = messagePatterns.first().fold(init) { state, token ->
             fun mixKey(local: KeyPair?, remote: PublicKey?) = when {
                 local == null || remote == null -> null
