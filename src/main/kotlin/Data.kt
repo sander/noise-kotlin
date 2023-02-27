@@ -11,4 +11,9 @@ value class Data(val value: ByteArray) {
         require(value.size == that.value.size)
         ByteArray(value.size) { this.value[it].xor(that.value[it]) }
     })
+
+    companion object {
+
+        fun empty() = Data(ByteArray(0))
+    }
 }

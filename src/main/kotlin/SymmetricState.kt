@@ -2,7 +2,7 @@ package nl.sanderdijkhuis.noise
 
 data class SymmetricState(val cipherState: CipherState, val ck: ChainingKey, val h: Digest) {
 
-    private val cryptography get() = cipherState.cryptography
+    val cryptography get() = cipherState.cryptography
 
     fun mixKey(inputKeyMaterial: InputKeyMaterial) = let {
         val result = HashFunction.deriveKey2(cryptography, ck, inputKeyMaterial)

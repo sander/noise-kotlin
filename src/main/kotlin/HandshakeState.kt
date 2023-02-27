@@ -12,55 +12,54 @@ data class HandshakeState(
     // assume that all required keys are provided
 ) {
 
-    // return InsufficientKeyMaterial | LastHandshakeMessage message c1 c2 | IntermediateHandshakeMessage message state
-    // writeMessage(payload: Payload: keyPair: KeyPair) // for new e messages
-    fun writeMessage(payload: Payload): State<HandshakeState, Message>? =
-        let {
-            val pattern = messagePatterns.first()
-            val result = pattern.fold(
-                State(symmetricState, Data(ByteArray(0))) as State<SymmetricState, Data>?
-            ) { state, token ->
-                when {
-                    state == null -> null
-                    token == Token.E && e != null -> let {
-                        val mixed = state.state.mixHash(e.public.data)
-                        val buffer = state.value + e.public.data
+    private val cryptography get() = symmetricState.cryptography
 
-                        // TODO later
-                        mixed.encryptAndHash(payload.plainText)?.map { c -> buffer + c.data() }
-                            ?: state.copy(value = buffer + payload.data)
-                    }
+    private fun State<HandshakeState, Data>.run(
+        d: Data = Data.empty(),
+        f: (SymmetricState) -> SymmetricState
+    ) =
+        copy(current = current.copy(symmetricState = f(current.symmetricState)), result = result + d)
 
-//                    State(
-//                        state.state.mixHash(e.public.data),
-//                        state.value + e.public.data
-//                    ).let {
-//                        it.state.encryptAndHash(payload.plainText)?.map { c -> it.value + c.data() }
-//                            ?: it.copy(value = it.value + payload.data)
-//                    }
+    private fun State<HandshakeState, Data>.runAndAppendInState(
+        f: (SymmetricState) -> State<SymmetricState, Data>?
+    ) =
+        f(current.symmetricState)?.let { s -> State(current.copy(symmetricState = s.current), result + s.result) }
 
-                    else -> state
+    fun writeMessage(payload: Payload) = let {
+        val init: State<HandshakeState, Data>? = State(this, Data.empty())
+        val state = messagePatterns.first().fold(init) { state, token ->
+            fun mixKey(local: KeyPair?, remote: PublicKey?) = when {
+                local == null || remote == null -> null
+                else -> state?.run { s -> s.mixKey(cryptography.agree(local.private, remote).inputKeyMaterial) }
+            }
+            when {
+                state == null -> null
+                token == Token.E && e != null -> state.run(e.public.data) { it.mixHash(e.public.data) }
+                token == Token.S && s != null -> state.runAndAppendInState {
+                    it.encryptAndHash(s.public.plaintext)?.map { c -> c.data() }
                 }
-//                state?.let { s ->
-//                    when (token) {
-//                        Token.E -> e
-//                            ?.let { State(s.state.mixHash(it.public.data), s.value + it.public.data) }
-//                            ?.let {
-//                                it.state.encryptAndHash(payload.plainText)?.map { c -> it.value + c.data() }
-//                                    ?: State(it.state, it.value + payload.data)
-//                            }
-//
-//                        else -> state
-//                    }
-//                }
+
+                token == Token.EE -> mixKey(e, re)
+                token == Token.ES && role == Role.INITIATOR -> mixKey(e, rs)
+                token == Token.ES && role == Role.RESPONDER -> mixKey(s, re)
+                token == Token.SE && role == Role.INITIATOR -> mixKey(s, re)
+                token == Token.SE && role == Role.RESPONDER -> mixKey(e, rs)
+                token == Token.SS -> mixKey(s, rs)
+                else -> null
             }
-            result?.let {
-                State(
-                    copy(symmetricState = it.state, messagePatterns = messagePatterns.drop(1)),
-                    Message(it.value.value)
-                )
-            }
+        }?.runAndAppendInState { it.encryptAndHash(payload.plainText)?.map { c -> c.data() } }?.map { Message(it.value) }
+        val rest = messagePatterns.drop(1)
+        when {
+            state == null -> MessageResult.InsufficientKeyMaterial
+            rest.isEmpty() -> symmetricState.split()
+                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
+
+            else -> MessageResult.IntermediateHandshakeMessage(
+                state.current.copy(messagePatterns = rest),
+                state.result
+            )
         }
+    }
 
     sealed interface MessageResult {
 

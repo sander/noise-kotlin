@@ -4,4 +4,6 @@ package nl.sanderdijkhuis.noise
 value class PublicKey(val value: ByteArray) {
 
     val data get() = Data(value)
+
+    val plaintext get() = Plaintext(value)
 }
