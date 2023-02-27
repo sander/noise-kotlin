@@ -53,7 +53,7 @@ data class HandshakeState(
         when {
             state == null -> MessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
+                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, symmetricState.h, state.result) }
 
             else -> MessageResult.IntermediateHandshakeMessage(
                 state.current.copy(messagePatterns = rest),
@@ -138,7 +138,7 @@ data class HandshakeState(
         when {
             state == null -> MessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
+                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, symmetricState.h, state.result) }
 
             else -> MessageResult.IntermediateHandshakeMessage(
                 state.current.copy(messagePatterns = rest),
@@ -161,12 +161,31 @@ data class HandshakeState(
             cryptography: Cryptography,
             pattern: HandshakePattern, role: Role, prologue: Prologue,
             s: KeyPair? = null, e: KeyPair? = null, rs: PublicKey? = null, re: PublicKey? = null
-        ) = let {
-            val symmetricState = SymmetricState
-                .initialize(cryptography, pattern.name)
-                .mixHash(prologue.data)
-            // TODO mixHash for each public key listed in pre-messages
-            HandshakeState(role, symmetricState, pattern.messagePatterns, s, e, rs, re)
+        ): HandshakeState? {
+            var state = SymmetricState.initialize(cryptography, pattern.name).mixHash(prologue.data)
+            if (pattern.preSharedMessagePatterns.size > 0) {
+                for (p in pattern.preSharedMessagePatterns[0]) {
+                    if (p == Token.S && role == Role.INITIATOR && s != null) {
+                        state = state.mixHash(s.public.data)
+                    } else if (p == Token.S && role == Role.RESPONDER && rs != null) {
+                        state = state.mixHash(rs.data)
+                    } else {
+                        return null
+                    }
+                }
+            }
+            if (pattern.preSharedMessagePatterns.size == 2) {
+                for (p in pattern.preSharedMessagePatterns[1]) {
+                    if (p == Token.S && role == Role.RESPONDER && s != null) {
+                        state = state.mixHash(s.public.data)
+                    } else if (p == Token.S && role == Role.INITIATOR && rs != null) {
+                        state = state.mixHash(rs.data)
+                    } else {
+                        return null
+                    }
+                }
+            }
+            return HandshakeState(role, state, pattern.messagePatterns, s, e, rs, re)
         }
     }
 }

@@ -7,8 +7,9 @@ sealed interface MessageResult<T> {
     data class IntermediateHandshakeMessage<T>(val state: HandshakeState, val result: T) : MessageResult<T>
 
     data class FinalHandshakeMessage<T>(
-        val cipherState1: CipherState,
-        val cipherState2: CipherState,
+        val initiatorCipherState: CipherState,
+        val responderCipherState: CipherState,
+        val handshakeHash: Digest,
         val result: T
     ) : MessageResult<T>
 }

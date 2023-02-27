@@ -10,5 +10,7 @@ value class AssociatedData(val value: ByteArray) {
     companion object {
 
         const val MAX_SIZE = Size.MAX_MESSAGE
+
+        fun empty() = AssociatedData(ByteArray(0))
     }
 }
