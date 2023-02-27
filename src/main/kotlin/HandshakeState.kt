@@ -92,31 +92,16 @@ data class HandshakeState(
                     }
 
                 token == Token.S && state.current.rs == null -> let {
-                    if (state.current.symmetricState.cipherState.k == null) {
-                        val temp =
-                            state.result.value.sliceArray(IntRange(0, KeyAgreementConfiguration.size.value - 1 + 16))
-                        val rs =
-                            state.current.symmetricState.decryptAndHash(Ciphertext(temp))?.let { PublicKey(it.value) }
-                        rs?.let {
-                            state.copy(
-                                current = state.current.copy(rs = it),
-                                result = Data(
-                                    state.result.value.drop(KeyAgreementConfiguration.size.value + 16).toByteArray()
-                                )
+                    val splitAt = KeyAgreementConfiguration.size.value + 16
+                    val temp =
+                        state.result.value.sliceArray(IntRange(0, splitAt - 1))
+                    state.current.symmetricState.decryptAndHash(Ciphertext(temp))?.let {
+                        state.copy(
+                            current = state.current.copy(symmetricState = it.current, rs = PublicKey(it.result.value)),
+                            result = Data(
+                                state.result.value.drop(splitAt).toByteArray()
                             )
-                        }
-                    } else {
-                        val temp = state.result.value.sliceArray(IntRange(0, KeyAgreementConfiguration.size.value - 1))
-                        val rs =
-                            state.current.symmetricState.decryptAndHash(Ciphertext(temp))?.let { PublicKey(it.value) }
-                        rs?.let {
-                            state.copy(
-                                current = state.current.copy(rs = it),
-                                result = Data(
-                                    state.result.value.drop(KeyAgreementConfiguration.size.value).toByteArray()
-                                )
-                            )
-                        }
+                        )
                     }
                 }
 
@@ -124,6 +109,7 @@ data class HandshakeState(
                     println("EE: Mixing ${state.current.e} ${state.current.re}")
                     mixKey(state.current.e, state.current.re)
                 }
+
                 token == Token.ES && role == Role.INITIATOR -> mixKey(state.current.e, state.current.rs)
                 token == Token.ES && role == Role.RESPONDER -> mixKey(state.current.s, state.current.re)
                 token == Token.SE && role == Role.INITIATOR -> mixKey(state.current.s, state.current.re)
@@ -132,9 +118,15 @@ data class HandshakeState(
                 else -> null
             }
         }?.let {
-            val decrypted = it.current.symmetricState.decryptAndHash(Ciphertext(it.result.value))
-            State(current = it.current, result = Payload(Data(decrypted.value)))
+            it.current.symmetricState.decryptAndHash(Ciphertext(it.result.value))?.let { decrypted ->
+                State(
+                    it.current.copy(symmetricState = decrypted.current), Payload(
+                        Data(decrypted.result.value)
+                    )
+                )
+            }
         }
+
         val rest = messagePatterns.drop(1)
         when {
             state == null -> ReadMessageResult.InsufficientKeyMaterial

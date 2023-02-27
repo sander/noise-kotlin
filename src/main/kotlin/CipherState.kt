@@ -9,10 +9,11 @@ data class CipherState(val cryptography: Cryptography, val k: CipherKey? = null,
         } ?: plaintext.ciphertext
 
     fun decryptWithAssociatedData(associatedData: AssociatedData, ciphertext: Ciphertext) =
-        k?.let {
+        if (k == null) ciphertext.plaintext else
+        let {
             println("Decrypting $k $n $associatedData $ciphertext")
-            cryptography.decrypt(it, n, associatedData, ciphertext)
-        } ?: ciphertext.plaintext
+            cryptography.decrypt(k, n, associatedData, ciphertext)
+        }
 
 //    fun rekey() = k?.rekey()
 }

@@ -12,7 +12,11 @@ data class SymmetricState(val cipherState: CipherState, val ck: ChainingKey, val
         )
     }
 
-    fun mixHash(data: Data) = copy(h = cryptography.hash(h.data() + data))
+    fun mixHash(data: Data) = let {
+        val result = copy(h = cryptography.hash(h.data() + data))
+        println("Mixing $h + $data = ${result.h}")
+        result
+    }
 
     fun encryptAndHash(plaintext: Plaintext) =
         cipherState.encryptWithAssociatedData(h.associatedData(), plaintext).let {
@@ -20,7 +24,9 @@ data class SymmetricState(val cipherState: CipherState, val ck: ChainingKey, val
         }
 
     fun decryptAndHash(ciphertext: Ciphertext) =
-        cipherState.decryptWithAssociatedData(h.associatedData(), ciphertext)
+        cipherState.decryptWithAssociatedData(h.associatedData(), ciphertext)?.let {
+            State(mixHash(ciphertext.data()), it)
+        }
 
     fun split() = let {
         val zeroLen = InputKeyMaterial(ByteArray(0))
