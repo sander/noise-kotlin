@@ -51,18 +51,18 @@ data class HandshakeState(
             ?.map { Message(it.value) }
         val rest = messagePatterns.drop(1)
         when {
-            state == null -> WriteMessageResult.InsufficientKeyMaterial
+            state == null -> MessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { WriteMessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
+                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
 
-            else -> WriteMessageResult.IntermediateHandshakeMessage(
+            else -> MessageResult.IntermediateHandshakeMessage(
                 state.current.copy(messagePatterns = rest),
                 state.result
             )
         }
     }
 
-    fun readMessage(message: Message): ReadMessageResult? = let {
+    fun readMessage(message: Message) = let {
         println("Reading ${messagePatterns.first()}")
         val init: State<HandshakeState, Data>? = State(this, Data(message.value))
         val state = messagePatterns.first().fold(init) { state, token ->
@@ -70,6 +70,8 @@ data class HandshakeState(
                 local == null || remote == null -> null
                 else -> state?.run { s -> s.mixKey(cryptography.agree(local.private, remote).inputKeyMaterial) }
             }
+            println("State $state")
+            println("Token $token")
             when {
                 state == null -> null
                 token == Token.E && state.current.re == null ->
@@ -92,6 +94,7 @@ data class HandshakeState(
                     }
 
                 token == Token.S && state.current.rs == null -> let {
+                    println("S")
                     val splitAt = KeyAgreementConfiguration.size.value + 16
                     val temp =
                         state.result.value.sliceArray(IntRange(0, splitAt - 1))
@@ -112,7 +115,11 @@ data class HandshakeState(
 
                 token == Token.ES && role == Role.INITIATOR -> mixKey(state.current.e, state.current.rs)
                 token == Token.ES && role == Role.RESPONDER -> mixKey(state.current.s, state.current.re)
-                token == Token.SE && role == Role.INITIATOR -> mixKey(state.current.s, state.current.re)
+                token == Token.SE && role == Role.INITIATOR -> let {
+                    println("SE")
+                    mixKey(state.current.s, state.current.re)
+                }
+
                 token == Token.SE && role == Role.RESPONDER -> mixKey(state.current.e, state.current.rs)
                 token == Token.SS -> mixKey(state.current.s, state.current.rs)
                 else -> null
@@ -129,41 +136,15 @@ data class HandshakeState(
 
         val rest = messagePatterns.drop(1)
         when {
-            state == null -> ReadMessageResult.InsufficientKeyMaterial
+            state == null -> MessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { ReadMessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
+                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
 
-            else -> ReadMessageResult.IntermediateHandshakeMessage(
+            else -> MessageResult.IntermediateHandshakeMessage(
                 state.current.copy(messagePatterns = rest),
                 state.result
             )
         }
-    }
-
-    sealed interface WriteMessageResult {
-
-        object InsufficientKeyMaterial : WriteMessageResult
-
-        data class IntermediateHandshakeMessage(val state: HandshakeState, val message: Message) : WriteMessageResult
-
-        data class FinalHandshakeMessage(
-            val cipherState1: CipherState,
-            val cipherState2: CipherState,
-            val message: Message
-        ) : WriteMessageResult
-    }
-
-    sealed interface ReadMessageResult {
-
-        object InsufficientKeyMaterial : ReadMessageResult
-
-        data class IntermediateHandshakeMessage(val state: HandshakeState, val payload: Payload) : ReadMessageResult
-
-        data class FinalHandshakeMessage(
-            val cipherState1: CipherState,
-            val cipherState2: CipherState,
-            val payload: Payload
-        ) : ReadMessageResult
     }
 
     enum class Role {

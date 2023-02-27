@@ -18,15 +18,19 @@ data class SymmetricState(val cipherState: CipherState, val ck: ChainingKey, val
         result
     }
 
-    fun encryptAndHash(plaintext: Plaintext) =
+    fun encryptAndHash(plaintext: Plaintext) = let {
+        println("Encrypting and hashing $h $plaintext")
         cipherState.encryptWithAssociatedData(h.associatedData(), plaintext).let {
             State(mixHash(it.data()), it)
         }
+    }
 
-    fun decryptAndHash(ciphertext: Ciphertext) =
+    fun decryptAndHash(ciphertext: Ciphertext) = let {
+        println("Decrypting and hashing $h $ciphertext")
         cipherState.decryptWithAssociatedData(h.associatedData(), ciphertext)?.let {
             State(mixHash(ciphertext.data()), it)
         }
+    }
 
     fun split() = let {
         val zeroLen = InputKeyMaterial(ByteArray(0))
