@@ -15,7 +15,7 @@ data class SymmetricState(val cipherState: CipherState, val ck: ChainingKey, val
     fun mixHash(data: Data) = copy(h = cryptography.hash(h.data() + data))
 
     fun encryptAndHash(plaintext: Plaintext) =
-        cipherState.encryptWithAssociatedData(h.associatedData(), plaintext)?.let {
+        cipherState.encryptWithAssociatedData(h.associatedData(), plaintext).let {
             State(mixHash(it.data()), it)
         }
 

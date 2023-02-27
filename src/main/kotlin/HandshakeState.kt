@@ -32,11 +32,13 @@ data class HandshakeState(
                 local == null || remote == null -> null
                 else -> state?.run { s -> s.mixKey(cryptography.agree(local.private, remote).inputKeyMaterial) }
             }
+            println(state)
+            println(token)
             when {
                 state == null -> null
                 token == Token.E && e != null -> state.run(e.public.data) { it.mixHash(e.public.data) }
                 token == Token.S && s != null -> state.runAndAppendInState {
-                    it.encryptAndHash(s.public.plaintext)?.map { c -> c.data() }
+                    it.encryptAndHash(s.public.plaintext).map { c -> c.data() }
                 }
 
                 token == Token.EE -> mixKey(e, re)
@@ -89,14 +91,14 @@ data class HandshakeState(
         fun initialize(
             cryptography: Cryptography,
             pattern: HandshakePattern, role: Role, prologue: Prologue,
-            s: KeyPair?, e: KeyPair?, rs: PublicKey?, re: PublicKey?
+            s: KeyPair? = null, e: KeyPair? = null, rs: PublicKey? = null, re: PublicKey? = null
         ) = let {
             val protocolName = ProtocolName(ByteArray(0)) // TODO
             val symmetricState = SymmetricState
                 .initialize(cryptography, protocolName)
                 .mixHash(prologue.data)
             // TODO mixHash for each public key listed in pre-messages
-            HandshakeState(pattern, role, symmetricState, listOf(listOf(Token.E)))
+            HandshakeState(pattern, role, symmetricState, listOf(listOf(Token.E)), s, e, rs, re)
         }
     }
 }
