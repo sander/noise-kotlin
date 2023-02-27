@@ -8,7 +8,7 @@ This project contains example code for implementing [Noise](https://noiseprotoco
 > - It has not yet been tested together with other Noise implementations.
 > - It has not yet been reviewed for secure engineering practices.
 > - It contains some major gaps, e.g. lack of nonce incrementing in `CipherState`, making it “as leaky as a basket”.
-> - It leaves your secrets on the heap, ready for grabs.
+> - It leaves your secrets on the heap, up for grabs.
 > - It even logs some of them.
 > - It is not licensed for use.
 
