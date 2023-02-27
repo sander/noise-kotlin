@@ -1,7 +1,7 @@
 package nl.sanderdijkhuis.noise
 
 @JvmInline
-value class AssociatedData(private val value: ByteArray) {
+value class AssociatedData(val value: ByteArray) {
 
     init {
         require(value.size <= MAX_SIZE)

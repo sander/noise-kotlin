@@ -6,7 +6,7 @@ interface Cryptography {
 
     fun encrypt(key: CipherKey, nonce: Nonce, associatedData: AssociatedData, plaintext: Plaintext): Ciphertext
 
-    fun decrypt(key: CipherKey, nonce: Nonce, associatedData: AssociatedData, ciphertext: Ciphertext): Plaintext
+    fun decrypt(key: CipherKey, nonce: Nonce, associatedData: AssociatedData, ciphertext: Ciphertext): Plaintext?
 
     fun hash(data: Data): Digest
 }

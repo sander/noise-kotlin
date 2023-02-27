@@ -61,6 +61,8 @@ data class HandshakeState(
         }
     }
 
+    fun readMessage(message: Message): Payload? = TODO()
+
     sealed interface MessageResult {
 
         object InsufficientKeyMaterial : MessageResult

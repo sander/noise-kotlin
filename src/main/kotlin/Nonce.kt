@@ -1,7 +1,7 @@
 package nl.sanderdijkhuis.noise
 
 @JvmInline
-value class Nonce(private val value: ByteArray) {
+value class Nonce(val value: ByteArray) {
 
     init {
         require(value.size == SIZE)

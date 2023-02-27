@@ -1,7 +1,7 @@
 package nl.sanderdijkhuis.noise
 
 @JvmInline
-value class CipherKey(private val value: ByteArray) {
+value class CipherKey(val value: ByteArray) {
 
     init {
         require(value.size == SIZE)
