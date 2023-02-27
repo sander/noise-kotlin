@@ -46,33 +46,93 @@ data class HandshakeState(
                 token == Token.SS -> mixKey(s, rs)
                 else -> null
             }
-        }?.runAndAppendInState { it.encryptAndHash(payload.plainText)?.map { c -> c.data() } }?.map { Message(it.value) }
+        }?.runAndAppendInState { it.encryptAndHash(payload.plainText)?.map { c -> c.data() } }
+            ?.map { Message(it.value) }
         val rest = messagePatterns.drop(1)
         when {
-            state == null -> MessageResult.InsufficientKeyMaterial
+            state == null -> WriteMessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
+                .let { WriteMessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
 
-            else -> MessageResult.IntermediateHandshakeMessage(
+            else -> WriteMessageResult.IntermediateHandshakeMessage(
                 state.current.copy(messagePatterns = rest),
                 state.result
             )
         }
     }
 
-    fun readMessage(message: Message): MessageResult? = TODO()
+    fun readMessage(message: Message): ReadMessageResult? = let {
+        val init: State<HandshakeState, Data>? = State(this, Data(message.value))
+        val state = messagePatterns.first().fold(init) { state, token ->
+            fun mixKey(local: KeyPair?, remote: PublicKey?) = when {
+                local == null || remote == null -> null
+                else -> state?.run { s -> s.mixKey(cryptography.agree(local.private, remote).inputKeyMaterial) }
+            }
+            when {
+                state == null -> null
+                token == Token.E && e != null ->
+                    if (re != null) null else let {
+                        val re =
+                            PublicKey(state.result.value.sliceArray(IntRange(0, KeyAgreementConfiguration.size.value - 1)))
+                        val mixed = state.current.symmetricState.mixHash(re.data)
+                        state.copy(current = state.current.copy(symmetricState = mixed, re = re),
+                            result = Data(state.result.value.drop(KeyAgreementConfiguration.size.value).toByteArray()))
+                    }
 
-    sealed interface MessageResult {
+//                token == Token.S && s != null -> state.runAndAppendInState {
+//                    it.encryptAndHash(s.public.plaintext).map { c -> c.data() }
+//                }
+//
+//                token == Token.EE -> mixKey(e, re)
+//                token == Token.ES && role == Role.INITIATOR -> mixKey(e, rs)
+//                token == Token.ES && role == Role.RESPONDER -> mixKey(s, re)
+//                token == Token.SE && role == Role.INITIATOR -> mixKey(s, re)
+//                token == Token.SE && role == Role.RESPONDER -> mixKey(e, rs)
+//                token == Token.SS -> mixKey(s, rs)
+                else -> null
+            }
+        }//?.runAndAppendInState { it.decryptAndHash() }.map { Payload(it) }
+        val state2 = state?.let {
+            val decrypted = it.current.symmetricState.decryptAndHash(Ciphertext(it.result.value))
+            State(current = it.current, result = Payload(Data(decrypted.value)))
+        }
+        val rest = messagePatterns.drop(1)
+        when {
+            state2 == null -> ReadMessageResult.InsufficientKeyMaterial
+            rest.isEmpty() -> symmetricState.split()
+                .let { ReadMessageResult.FinalHandshakeMessage(it.first, it.second, state2.result) }
 
-        object InsufficientKeyMaterial : MessageResult
+            else -> ReadMessageResult.IntermediateHandshakeMessage(
+                state2.current.copy(messagePatterns = rest),
+                state2.result
+            )
+        }
+    }
 
-        data class IntermediateHandshakeMessage(val state: HandshakeState, val message: Message) : MessageResult
+    sealed interface WriteMessageResult {
+
+        object InsufficientKeyMaterial : WriteMessageResult
+
+        data class IntermediateHandshakeMessage(val state: HandshakeState, val message: Message) : WriteMessageResult
 
         data class FinalHandshakeMessage(
             val cipherState1: CipherState,
             val cipherState2: CipherState,
             val message: Message
-        ) : MessageResult
+        ) : WriteMessageResult
+    }
+
+    sealed interface ReadMessageResult {
+
+        object InsufficientKeyMaterial : ReadMessageResult
+
+        data class IntermediateHandshakeMessage(val state: HandshakeState, val payload: Payload) : ReadMessageResult
+
+        data class FinalHandshakeMessage(
+            val cipherState1: CipherState,
+            val cipherState2: CipherState,
+            val payload: Payload
+        ) : ReadMessageResult
     }
 
     enum class Role {
