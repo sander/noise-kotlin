@@ -70,41 +70,74 @@ data class HandshakeState(
             }
             when {
                 state == null -> null
-                token == Token.E && e != null ->
-                    if (re != null) null else let {
+                token == Token.E && re == null ->
+                    let {
                         val re =
-                            PublicKey(state.result.value.sliceArray(IntRange(0, KeyAgreementConfiguration.size.value - 1)))
+                            PublicKey(
+                                state.result.value.sliceArray(
+                                    IntRange(
+                                        0,
+                                        KeyAgreementConfiguration.size.value - 1
+                                    )
+                                )
+                            )
                         val mixed = state.current.symmetricState.mixHash(re.data)
-                        state.copy(current = state.current.copy(symmetricState = mixed, re = re),
-                            result = Data(state.result.value.drop(KeyAgreementConfiguration.size.value).toByteArray()))
+                        state.copy(
+                            current = state.current.copy(symmetricState = mixed, re = re),
+                            result = Data(state.result.value.drop(KeyAgreementConfiguration.size.value).toByteArray())
+                        )
                     }
 
-//                token == Token.S && s != null -> state.runAndAppendInState {
-//                    it.encryptAndHash(s.public.plaintext).map { c -> c.data() }
-//                }
-//
-//                token == Token.EE -> mixKey(e, re)
-//                token == Token.ES && role == Role.INITIATOR -> mixKey(e, rs)
-//                token == Token.ES && role == Role.RESPONDER -> mixKey(s, re)
-//                token == Token.SE && role == Role.INITIATOR -> mixKey(s, re)
-//                token == Token.SE && role == Role.RESPONDER -> mixKey(e, rs)
-//                token == Token.SS -> mixKey(s, rs)
+                token == Token.S && rs == null -> let {
+                    if (state.current.symmetricState.cipherState.k == null) {
+                        val temp =
+                            state.result.value.sliceArray(IntRange(0, KeyAgreementConfiguration.size.value - 1 + 16))
+                        val rs =
+                            state.current.symmetricState.decryptAndHash(Ciphertext(temp))?.let { PublicKey(it.value) }
+                        rs?.let {
+                            state.copy(
+                                current = state.current.copy(rs = it),
+                                result = Data(
+                                    state.result.value.drop(KeyAgreementConfiguration.size.value + 16).toByteArray()
+                                )
+                            )
+                        }
+                    } else {
+                        val temp = state.result.value.sliceArray(IntRange(0, KeyAgreementConfiguration.size.value - 1))
+                        val rs =
+                            state.current.symmetricState.decryptAndHash(Ciphertext(temp))?.let { PublicKey(it.value) }
+                        rs?.let {
+                            state.copy(
+                                current = state.current.copy(rs = it),
+                                result = Data(
+                                    state.result.value.drop(KeyAgreementConfiguration.size.value).toByteArray()
+                                )
+                            )
+                        }
+                    }
+                }
+
+                token == Token.EE -> mixKey(e, re)
+                token == Token.ES && role == Role.INITIATOR -> mixKey(e, rs)
+                token == Token.ES && role == Role.RESPONDER -> mixKey(s, re)
+                token == Token.SE && role == Role.INITIATOR -> mixKey(s, re)
+                token == Token.SE && role == Role.RESPONDER -> mixKey(e, rs)
+                token == Token.SS -> mixKey(s, rs)
                 else -> null
             }
-        }//?.runAndAppendInState { it.decryptAndHash() }.map { Payload(it) }
-        val state2 = state?.let {
+        }?.let {
             val decrypted = it.current.symmetricState.decryptAndHash(Ciphertext(it.result.value))
             State(current = it.current, result = Payload(Data(decrypted.value)))
         }
         val rest = messagePatterns.drop(1)
         when {
-            state2 == null -> ReadMessageResult.InsufficientKeyMaterial
+            state == null -> ReadMessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { ReadMessageResult.FinalHandshakeMessage(it.first, it.second, state2.result) }
+                .let { ReadMessageResult.FinalHandshakeMessage(it.first, it.second, state.result) }
 
             else -> ReadMessageResult.IntermediateHandshakeMessage(
-                state2.current.copy(messagePatterns = rest),
-                state2.result
+                state.current.copy(messagePatterns = rest),
+                state.result
             )
         }
     }
