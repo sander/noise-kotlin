@@ -6,13 +6,21 @@ class HandshakeTest {
 
     @Test
     fun testHandshake() {
-        val handshake = HandshakeState.initialize(
+        val prologue = Prologue(Data.empty())
+        val alice01 = HandshakeState.initialize(
             JavaCryptography,
-            HandshakePattern,
+            HandshakePattern.Noise_XN_25519_ChaChaPoly_SHA256,
             HandshakeState.Role.INITIATOR,
-            Prologue(Data.empty()),
+            prologue,
             e = JavaCryptography.generateKeyPair()
-        ).writeMessage(Payload(Data.empty()))
-        println(handshake)
+        ).writeMessage(Payload(Data.empty())) as HandshakeState.MessageResult.IntermediateHandshakeMessage
+        val bob01 = HandshakeState.initialize(
+            JavaCryptography,
+            HandshakePattern.Noise_XN_25519_ChaChaPoly_SHA256,
+            HandshakeState.Role.RESPONDER,
+            prologue,
+            e = JavaCryptography.generateKeyPair()
+        ).readMessage(alice01.message) as HandshakeState.MessageResult.IntermediateHandshakeMessage
+        println(bob01)
     }
 }

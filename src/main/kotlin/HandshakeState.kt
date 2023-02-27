@@ -1,7 +1,6 @@
 package nl.sanderdijkhuis.noise
 
 data class HandshakeState(
-    val pattern: HandshakePattern,
     val role: Role,
     val symmetricState: SymmetricState,
     val messagePatterns: List<List<Token>>,
@@ -32,8 +31,6 @@ data class HandshakeState(
                 local == null || remote == null -> null
                 else -> state?.run { s -> s.mixKey(cryptography.agree(local.private, remote).inputKeyMaterial) }
             }
-            println(state)
-            println(token)
             when {
                 state == null -> null
                 token == Token.E && e != null -> state.run(e.public.data) { it.mixHash(e.public.data) }
@@ -63,7 +60,7 @@ data class HandshakeState(
         }
     }
 
-    fun readMessage(message: Message): Payload? = TODO()
+    fun readMessage(message: Message): MessageResult? = TODO()
 
     sealed interface MessageResult {
 
@@ -93,12 +90,11 @@ data class HandshakeState(
             pattern: HandshakePattern, role: Role, prologue: Prologue,
             s: KeyPair? = null, e: KeyPair? = null, rs: PublicKey? = null, re: PublicKey? = null
         ) = let {
-            val protocolName = ProtocolName(ByteArray(0)) // TODO
             val symmetricState = SymmetricState
-                .initialize(cryptography, protocolName)
+                .initialize(cryptography, pattern.name)
                 .mixHash(prologue.data)
             // TODO mixHash for each public key listed in pre-messages
-            HandshakeState(pattern, role, symmetricState, listOf(listOf(Token.E)), s, e, rs, re)
+            HandshakeState(role, symmetricState, pattern.messagePatterns, s, e, rs, re)
         }
     }
 }
