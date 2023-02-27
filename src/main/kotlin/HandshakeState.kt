@@ -62,6 +62,7 @@ data class HandshakeState(
     }
 
     fun readMessage(message: Message): ReadMessageResult? = let {
+        println("Reading ${messagePatterns.first()}")
         val init: State<HandshakeState, Data>? = State(this, Data(message.value))
         val state = messagePatterns.first().fold(init) { state, token ->
             fun mixKey(local: KeyPair?, remote: PublicKey?) = when {
@@ -70,7 +71,7 @@ data class HandshakeState(
             }
             when {
                 state == null -> null
-                token == Token.E && re == null ->
+                token == Token.E && state.current.re == null ->
                     let {
                         val re =
                             PublicKey(
@@ -81,6 +82,7 @@ data class HandshakeState(
                                     )
                                 )
                             )
+                        println("E: read $re")
                         val mixed = state.current.symmetricState.mixHash(re.data)
                         state.copy(
                             current = state.current.copy(symmetricState = mixed, re = re),
@@ -88,7 +90,7 @@ data class HandshakeState(
                         )
                     }
 
-                token == Token.S && rs == null -> let {
+                token == Token.S && state.current.rs == null -> let {
                     if (state.current.symmetricState.cipherState.k == null) {
                         val temp =
                             state.result.value.sliceArray(IntRange(0, KeyAgreementConfiguration.size.value - 1 + 16))
@@ -117,12 +119,15 @@ data class HandshakeState(
                     }
                 }
 
-                token == Token.EE -> mixKey(e, re)
-                token == Token.ES && role == Role.INITIATOR -> mixKey(e, rs)
-                token == Token.ES && role == Role.RESPONDER -> mixKey(s, re)
-                token == Token.SE && role == Role.INITIATOR -> mixKey(s, re)
-                token == Token.SE && role == Role.RESPONDER -> mixKey(e, rs)
-                token == Token.SS -> mixKey(s, rs)
+                token == Token.EE -> let {
+                    println("EE: Mixing ${state.current.e} ${state.current.re}")
+                    mixKey(state.current.e, state.current.re)
+                }
+                token == Token.ES && role == Role.INITIATOR -> mixKey(state.current.e, state.current.rs)
+                token == Token.ES && role == Role.RESPONDER -> mixKey(state.current.s, state.current.re)
+                token == Token.SE && role == Role.INITIATOR -> mixKey(state.current.s, state.current.re)
+                token == Token.SE && role == Role.RESPONDER -> mixKey(state.current.e, state.current.rs)
+                token == Token.SS -> mixKey(state.current.s, state.current.rs)
                 else -> null
             }
         }?.let {
