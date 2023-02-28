@@ -1,5 +1,6 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.JavaCryptography.public
 import org.junit.jupiter.api.Test
 
 class JavaCryptographyTest {
@@ -23,5 +24,12 @@ class JavaCryptographyTest {
         val ciphertext = JavaCryptography.encrypt(key, nonce, associatedData, plaintext)
         val decrypted = JavaCryptography.decrypt(key, nonce, associatedData, ciphertext)
         assert(plaintext.value.contentEquals(decrypted?.value))
+    }
+
+    @Test
+    fun testCalculatePublicKey() {
+        val pair = JavaCryptography.generateKeyPair()
+        val calculated = pair.private.public()
+        assert(calculated.value.contentEquals(pair.public.value))
     }
 }

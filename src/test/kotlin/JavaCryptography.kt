@@ -28,6 +28,9 @@ object JavaCryptography : Cryptography {
     private fun PrivateKey.toJava() =
         agreementFactory.generatePrivate(XECPrivateKeySpec(spec, value))
 
+    /**  RFC 7748 § 6.1 */
+    fun PrivateKey.public() = PublicKey(agree(this, PublicKey(byteArrayOf(0x09) + ByteArray(31) { 0x00 })).value)
+
     private fun CipherKey.toJava() = SecretKeySpec(value, "ChaCha20")
 
     private fun Nonce.toJava() = IvParameterSpec(ByteArray(4) { 0x00 } + value)
