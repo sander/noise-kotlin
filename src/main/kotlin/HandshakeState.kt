@@ -48,7 +48,7 @@ data class HandshakeState(
                 token == Token.SS -> mixKey(s, rs)
                 else -> null
             }
-        }?.runAndAppendInState { it.encryptAndHash(payload.plainText)?.map { c -> c.data() } }
+        }?.runAndAppendInState { it.encryptAndHash(payload.plainText).map { c -> c.data() } }
             ?.map { Message(it.value) }
         val rest = messagePatterns.drop(1)
         when {
