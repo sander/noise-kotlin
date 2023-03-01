@@ -7,7 +7,8 @@ data class HandshakeState(
     val s: KeyPair? = null,
     val e: KeyPair? = null,
     val rs: PublicKey? = null,
-    val re: PublicKey? = null
+    val re: PublicKey? = null,
+    val trustedStaticKeys: Set<PublicKey> = emptySet()
     // assume that all required keys are provided
 ) {
 
@@ -99,12 +100,18 @@ data class HandshakeState(
                     val temp =
                         state.result.value.sliceArray(IntRange(0, splitAt - 1))
                     state.current.symmetricState.decryptAndHash(Ciphertext(temp))?.let {
-                        state.copy(
-                            current = state.current.copy(symmetricState = it.current, rs = PublicKey(it.result.value)),
-                            result = Data(
-                                state.result.value.drop(splitAt).toByteArray()
+                        val publicKey = PublicKey(it.result.value)
+                        println("Public key $publicKey")
+                        println("Trusting $trustedStaticKeys")
+                        println("Trusted? ${trustedStaticKeys.contains(publicKey)}")
+                        if (trustedStaticKeys.contains(publicKey))
+                            state.copy(
+                                current = state.current.copy(symmetricState = it.current, rs = publicKey),
+                                result = Data(
+                                    state.result.value.drop(splitAt).toByteArray()
+                                )
                             )
-                        )
+                        else null
                     }
                 }
 
@@ -160,7 +167,8 @@ data class HandshakeState(
         fun initialize(
             cryptography: Cryptography,
             pattern: HandshakePattern, role: Role, prologue: Prologue,
-            s: KeyPair? = null, e: KeyPair? = null, rs: PublicKey? = null, re: PublicKey? = null
+            s: KeyPair? = null, e: KeyPair? = null, rs: PublicKey? = null, re: PublicKey? = null,
+            trustedStaticKeys: Set<PublicKey> = emptySet()
         ): HandshakeState? {
             var state = SymmetricState.initialize(cryptography, pattern.name).mixHash(prologue.data)
             if (pattern.preSharedMessagePatterns.size > 0) {
@@ -185,7 +193,7 @@ data class HandshakeState(
                     }
                 }
             }
-            return HandshakeState(role, state, pattern.messagePatterns, s, e, rs, re)
+            return HandshakeState(role, state, pattern.messagePatterns, s, e, rs, re, trustedStaticKeys)
         }
     }
 }

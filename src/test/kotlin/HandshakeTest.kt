@@ -25,6 +25,7 @@ class HandshakeTest {
             HandshakeState.Role.RESPONDER,
             prologue,
             e = JavaCryptography.generateKeyPair(),
+            trustedStaticKeys = setOf(aliceStaticKey.public)
         )!!
 
         val string01 = "Hello"
@@ -57,7 +58,7 @@ class HandshakeTest {
             HandshakeState.Role.INITIATOR,
             prologue,
             e = JavaCryptography.generateKeyPair(),
-            rs = bobStaticKey.public
+            rs = bobStaticKey.public,
         )!!
         val bob00 = HandshakeState.initialize(
             JavaCryptography,
