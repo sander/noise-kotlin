@@ -1,0 +1,23 @@
+name: Integration
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+jobs:
+  check-workflow-pinning:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # ratchet:actions/checkout@v3
+      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:81af1075dc4ceb54f1c87ac9ff6a9ebe43626c59913f01810f5be77f4eb67301" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.4.0
+        with:
+          args: "check .github/workflows/integration.yml"
+      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:81af1075dc4ceb54f1c87ac9ff6a9ebe43626c59913f01810f5be77f4eb67301" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.4.0
+        with:
+          args: "check .github/workflows/codeql.yml"
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # ratchet:actions/checkout@v3
+      - uses: gradle/gradle-build-action@6095a76664413da4c8c134ee32e8a8ae900f0f1f # ratchet:gradle/gradle-build-action@v2
+      - run: ./gradlew build
