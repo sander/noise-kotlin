@@ -8,6 +8,7 @@
 > - It has not yet been tested together with other Noise implementations.
 > - It has not yet been reviewed for secure engineering practices.
 > - It contains some major gaps, e.g. lack of nonce incrementing in `CipherState`, making it “as leaky as a basket”.
+> - It does not provide a way to validate static keys.
 > - It leaves your secrets on the heap, up for grabs.
 > - It even logs some of them.
 
