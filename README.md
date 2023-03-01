@@ -1,6 +1,6 @@
 # Noise for Kotlin
 
-This project contains example code for implementing [Noise](https://noiseprotocol.org) protocols based on Diffie-Hellman key agreement. It may evolve into a usable library. [Contact me](mailto:mail@sanderdijkhuis.nl) if you are interested in helping out to realize this.
+**Noise for Kotlin** contains example code for implementing [Noise](https://noiseprotocol.org) protocols based on Diffie-Hellman key agreement. It may evolve into a usable library. [Contact me](mailto:mail@sanderdijkhuis.nl) if you are interested in helping out to realize this.
 
 > **Warning**: Reasons why you **may not** use any of this code in production yet:
 >
@@ -32,3 +32,8 @@ Instead of `test`, use `jar` to create a JAR in `build/distributions`.
 - Support only Curve25519, ChaCha20-Poly1305, and SHA-256 to reduce the need to choose and since these are available on most platforms.
     - Consequence: it should be easy to use with [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)).
 - Use only Kotlin types and functions, and nothing directly from Java SE or libraries.
+
+## Related resources
+
+- [License](LICENSE.md)
+- [Security policy](SECURITY.md)
