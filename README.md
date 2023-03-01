@@ -10,7 +10,6 @@ This project contains example code for implementing [Noise](https://noiseprotoco
 > - It contains some major gaps, e.g. lack of nonce incrementing in `CipherState`, making it “as leaky as a basket”.
 > - It leaves your secrets on the heap, up for grabs.
 > - It even logs some of them.
-> - It is not licensed for use.
 
 ## How to use
 
