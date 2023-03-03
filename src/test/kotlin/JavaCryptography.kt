@@ -58,7 +58,7 @@ object JavaCryptography : Cryptography {
         plaintext: Plaintext
     ) = Ciphertext(with(cipher) {
         init(Cipher.ENCRYPT_MODE, key.toJava(), nonce.toJava())
-        updateAAD(associatedData.value)
+        updateAAD(associatedData.data.value)
         doFinal(plaintext.value)
     })
 
@@ -69,11 +69,11 @@ object JavaCryptography : Cryptography {
         ciphertext: Ciphertext
     ) = with(cipher) {
         init(Cipher.DECRYPT_MODE, key.toJava(), nonce.toJava())
-        updateAAD(associatedData.value)
+        updateAAD(associatedData.data.value)
         doFinal(ciphertext.value)
     }?.let { Plaintext(it) }
 
     override fun hash(data: Data) = Digest(
-        MessageDigest.getInstance("SHA-256").digest(data.value)
+        Data(MessageDigest.getInstance("SHA-256").digest(data.value))
     )
 }

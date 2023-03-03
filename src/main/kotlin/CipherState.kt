@@ -1,28 +1,23 @@
 package nl.sanderdijkhuis.noise
 
-data class CipherState(val cryptography: Cryptography, val k: CipherKey? = null, val n: Nonce = Nonce.zero()) {
+data class CipherState(val cryptography: Cryptography, val key: CipherKey? = null, val nonce: Nonce = Nonce.zero) {
 
     fun encryptWithAssociatedData(associatedData: AssociatedData, plaintext: Plaintext) =
-        k?.let {
-            println("Encrypting $k $n $associatedData $plaintext")
-            State(copy(n = n.increment()), cryptography.encrypt(it, n, associatedData, plaintext))
+        key?.let {
+            println("Encrypting $key $nonce $associatedData $plaintext")
+            State(copy(nonce = nonce.increment()), cryptography.encrypt(it, nonce, associatedData, plaintext))
         } ?: let {
-            println("Returning plaintext $plaintext $n")
+            println("Returning plaintext $plaintext $nonce")
             State(this, plaintext.ciphertext)
         }
 
-    fun decryptWithAssociatedData(
-        associatedData: AssociatedData,
-        ciphertext: Ciphertext
-    ): State<CipherState, Plaintext>? = let {
-        println("Decrypting $k $n $associatedData $ciphertext")
-        if (k == null)
+    fun decryptWithAssociatedData(data: AssociatedData, ciphertext: Ciphertext): State<CipherState, Plaintext>? = let {
+        println("Decrypting $key $nonce $data $ciphertext")
+        if (key == null)
             State(this, ciphertext.plaintext)
         else
-            cryptography.decrypt(k, n, associatedData, ciphertext)?.let {
-                State(copy(n = n.increment()), it)
+            cryptography.decrypt(key, nonce, data, ciphertext)?.let {
+                State(copy(nonce = nonce.increment()), it)
             }
     }
-
-//    fun rekey() = k?.rekey()
 }

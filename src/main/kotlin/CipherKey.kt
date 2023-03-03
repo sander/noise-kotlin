@@ -1,25 +1,16 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.Size.Companion.valueSize
+
 @JvmInline
 value class CipherKey(val value: ByteArray) {
 
     init {
-        require(value.size == SIZE)
+        require(value.valueSize == SIZE)
     }
-
-//    fun encrypt(
-//        nonce: Nonce, associatedData: AssociatedData,
-//        plaintext: Plaintext
-//    ) = CipherFunction.Encrypt(this, nonce, associatedData, plaintext)
-//
-//    fun decrypt(
-//        nonce: Nonce, associatedData: AssociatedData, ciphertext: Ciphertext
-//    ) = CipherFunction.Decrypt(this, nonce, associatedData, ciphertext)
-//
-//    fun rekey() = CipherFunction.Rekey(this)
 
     companion object {
 
-        const val SIZE = 32
+        val SIZE = Size(32)
     }
 }

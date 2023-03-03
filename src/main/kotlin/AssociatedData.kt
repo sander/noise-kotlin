@@ -1,16 +1,10 @@
 package nl.sanderdijkhuis.noise
 
 @JvmInline
-value class AssociatedData(val value: ByteArray) {
-
-    init {
-        require(value.size <= MAX_SIZE)
-    }
+value class AssociatedData(val data: Data) {
 
     companion object {
 
-        const val MAX_SIZE = Size.MAX_MESSAGE
-
-        fun empty() = AssociatedData(ByteArray(0))
+        val empty get() = AssociatedData(Data.empty)
     }
 }

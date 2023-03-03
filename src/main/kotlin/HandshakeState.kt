@@ -9,13 +9,12 @@ data class HandshakeState(
     val rs: PublicKey? = null,
     val re: PublicKey? = null,
     val trustedStaticKeys: Set<PublicKey> = emptySet()
-    // assume that all required keys are provided
 ) {
 
     private val cryptography get() = symmetricState.cryptography
 
     private fun State<HandshakeState, Data>.run(
-        d: Data = Data.empty(),
+        d: Data = Data.empty,
         f: (SymmetricState) -> SymmetricState
     ) =
         copy(current = current.copy(symmetricState = f(current.symmetricState)), result = result + d)
@@ -26,7 +25,7 @@ data class HandshakeState(
         f(current.symmetricState)?.let { s -> State(current.copy(symmetricState = s.current), result + s.result) }
 
     fun writeMessage(payload: Payload) = let {
-        val init: State<HandshakeState, Data>? = State(this, Data.empty())
+        val init: State<HandshakeState, Data>? = State(this, Data.empty)
         println("Writing ${messagePatterns.first()}")
         val state = messagePatterns.first().fold(init) { state, token ->
             fun mixKey(local: KeyPair?, remote: PublicKey?) = when {
@@ -37,7 +36,7 @@ data class HandshakeState(
                 state == null -> null
                 token == Token.E && e != null -> state.run(e.public.data) { it.mixHash(e.public.data) }
                 token == Token.S && s != null -> state.runAndAppendInState {
-                    it.encryptAndHash(s.public.plaintext).map { c -> c.data() }
+                    it.encryptAndHash(s.public.plaintext).map { c -> c.data }
                 }
 
                 token == Token.EE -> mixKey(e, re)
@@ -48,13 +47,13 @@ data class HandshakeState(
                 token == Token.SS -> mixKey(s, rs)
                 else -> null
             }
-        }?.runAndAppendInState { it.encryptAndHash(payload.plainText).map { c -> c.data() } }
-            ?.map { Message(it.value) }
+        }?.runAndAppendInState { it.encryptAndHash(payload.plainText).map { c -> c.data } }
+            ?.map { Message(it) }
         val rest = messagePatterns.drop(1)
         when {
             state == null -> MessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, symmetricState.h, state.result) }
+                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, symmetricState.digest, state.result) }
 
             else -> MessageResult.IntermediateHandshakeMessage(
                 state.current.copy(messagePatterns = rest),
@@ -65,7 +64,7 @@ data class HandshakeState(
 
     fun readMessage(message: Message) = let {
         println("Reading ${messagePatterns.first()}")
-        val init: State<HandshakeState, Data>? = State(this, Data(message.value))
+        val init: State<HandshakeState, Data>? = State(this, message.data)
         val state = messagePatterns.first().fold(init) { state, token ->
             fun mixKey(local: KeyPair?, remote: PublicKey?) = when {
                 local == null || remote == null -> null
@@ -82,7 +81,7 @@ data class HandshakeState(
                                 state.result.value.sliceArray(
                                     IntRange(
                                         0,
-                                        KeyAgreementConfiguration.size.value - 1
+                                        KeyAgreementConfiguration.SIZE.value - 1
                                     )
                                 )
                             )
@@ -90,13 +89,13 @@ data class HandshakeState(
                         val mixed = state.current.symmetricState.mixHash(re.data)
                         state.copy(
                             current = state.current.copy(symmetricState = mixed, re = re),
-                            result = Data(state.result.value.drop(KeyAgreementConfiguration.size.value).toByteArray())
+                            result = Data(state.result.value.drop(KeyAgreementConfiguration.SIZE.value).toByteArray())
                         )
                     }
 
                 token == Token.S && state.current.rs == null -> let {
                     println("S")
-                    val splitAt = KeyAgreementConfiguration.size.value + 16
+                    val splitAt = KeyAgreementConfiguration.SIZE.value + 16
                     val temp =
                         state.result.value.sliceArray(IntRange(0, splitAt - 1))
                     state.current.symmetricState.decryptAndHash(Ciphertext(temp))?.let {
@@ -145,21 +144,13 @@ data class HandshakeState(
         when {
             state == null -> MessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, symmetricState.h, state.result) }
+                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, symmetricState.digest, state.result) }
 
             else -> MessageResult.IntermediateHandshakeMessage(
                 state.current.copy(messagePatterns = rest),
                 state.result
             )
         }
-    }
-
-    enum class Role {
-        INITIATOR, RESPONDER
-    }
-
-    enum class Token {
-        E, S, EE, ES, SE, SS
     }
 
     companion object {
@@ -171,7 +162,7 @@ data class HandshakeState(
             trustedStaticKeys: Set<PublicKey> = emptySet()
         ): HandshakeState? {
             var state = SymmetricState.initialize(cryptography, pattern.name).mixHash(prologue.data)
-            if (pattern.preSharedMessagePatterns.size > 0) {
+            if (pattern.preSharedMessagePatterns.isNotEmpty()) {
                 for (p in pattern.preSharedMessagePatterns[0]) {
                     if (p == Token.S && role == Role.INITIATOR && s != null) {
                         state = state.mixHash(s.public.data)

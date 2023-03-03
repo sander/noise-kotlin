@@ -1,7 +1,5 @@
 package nl.sanderdijkhuis.noise
 
-import nl.sanderdijkhuis.noise.HandshakeState.Token
-
 data class HandshakePattern(val name: ProtocolName, val preSharedMessagePatterns: List<List<Token>>, val messagePatterns: List<List<Token>>) {
 
     companion object {

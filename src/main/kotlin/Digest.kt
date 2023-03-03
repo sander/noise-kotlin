@@ -1,13 +1,13 @@
 package nl.sanderdijkhuis.noise
 
 @JvmInline
-value class Digest(val value: ByteArray) {
+value class Digest(val data: Data) {
 
     init {
-        require(value.size == HashConfiguration.hashSize.value)
+        require(data.size == HashFunction.HASH_SIZE)
     }
 
-    fun data() = Data(value)
+    val associatedData get() = AssociatedData(data)
 
-    fun associatedData() = AssociatedData(value)
+    val messageAuthenticationKey get() = MessageAuthenticationKey(data)
 }

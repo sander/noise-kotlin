@@ -10,11 +10,11 @@ class HandshakeTest {
     fun testHandshakeXN() {
         val aliceStaticKey = JavaCryptography.generateKeyPair()
         val pattern = HandshakePattern.Noise_XN_25519_ChaChaPoly_SHA256
-        val prologue = Prologue(Data.empty())
+        val prologue = Prologue(Data.empty)
         val alice00 = HandshakeState.initialize(
             JavaCryptography,
             pattern,
-            HandshakeState.Role.INITIATOR,
+            Role.INITIATOR,
             prologue,
             e = JavaCryptography.generateKeyPair(),
             s = aliceStaticKey
@@ -22,7 +22,7 @@ class HandshakeTest {
         val bob00 = HandshakeState.initialize(
             JavaCryptography,
             pattern,
-            HandshakeState.Role.RESPONDER,
+            Role.RESPONDER,
             prologue,
             e = JavaCryptography.generateKeyPair(),
             trustedStaticKeys = setOf(aliceStaticKey.public)
@@ -51,11 +51,11 @@ class HandshakeTest {
     fun testHandshakeNK() {
         val bobStaticKey = JavaCryptography.generateKeyPair()
         val pattern = HandshakePattern.Noise_NK_25519_ChaChaPoly_SHA256
-        val prologue = Prologue(Data.empty())
+        val prologue = Prologue(Data.empty)
         val alice00 = HandshakeState.initialize(
             JavaCryptography,
             pattern,
-            HandshakeState.Role.INITIATOR,
+            Role.INITIATOR,
             prologue,
             e = JavaCryptography.generateKeyPair(),
             rs = bobStaticKey.public,
@@ -63,7 +63,7 @@ class HandshakeTest {
         val bob00 = HandshakeState.initialize(
             JavaCryptography,
             pattern,
-            HandshakeState.Role.RESPONDER,
+            Role.RESPONDER,
             prologue,
             e = JavaCryptography.generateKeyPair(),
             s = bobStaticKey
@@ -81,8 +81,8 @@ class HandshakeTest {
         val alice02 = alice01.state.readMessage(bob02.result) as MessageResult.FinalHandshakeMessage
         assert(String(alice02.result.data.value) == string02)
 
-        val bob03 = bob02.responderCipherState.encryptWithAssociatedData(AssociatedData.empty(), string03.toPayload().plainText)
-        val alice03 = alice02.responderCipherState.decryptWithAssociatedData(AssociatedData.empty(), bob03.result)!!
+        val bob03 = bob02.responderCipherState.encryptWithAssociatedData(AssociatedData.empty, string03.toPayload().plainText)
+        val alice03 = alice02.responderCipherState.decryptWithAssociatedData(AssociatedData.empty, bob03.result)!!
         assert(String(alice03.result.value) == string03)
 
         println(alice02)

@@ -1,5 +1,4 @@
 package nl.sanderdijkhuis.noise
 
 @JvmInline
-value class Message(val value: ByteArray) {
-}
+value class Message(val data: Data)
