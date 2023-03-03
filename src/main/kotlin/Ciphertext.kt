@@ -1,9 +1,7 @@
 package nl.sanderdijkhuis.noise
 
 @JvmInline
-value class Ciphertext(val value: ByteArray) {
+value class Ciphertext(val data: Data) {
 
-    val data get() = Data(value)
-
-    val plaintext get() = Plaintext(value)
+    val plaintext get() = Plaintext(data)
 }

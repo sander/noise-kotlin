@@ -4,10 +4,10 @@ data class HandshakeState(
     val role: Role,
     val symmetricState: SymmetricState,
     val messagePatterns: List<List<Token>>,
-    val s: KeyPair? = null,
-    val e: KeyPair? = null,
-    val rs: PublicKey? = null,
-    val re: PublicKey? = null,
+    val localStaticKeyPair: KeyPair? = null,
+    val localEphemeralKeyPair: KeyPair? = null,
+    val remoteStaticKey: PublicKey? = null,
+    val remoteEphemeralKey: PublicKey? = null,
     val trustedStaticKeys: Set<PublicKey> = emptySet()
 ) {
 
@@ -34,17 +34,17 @@ data class HandshakeState(
             }
             when {
                 state == null -> null
-                token == Token.E && e != null -> state.run(e.public.data) { it.mixHash(e.public.data) }
-                token == Token.S && s != null -> state.runAndAppendInState {
-                    it.encryptAndHash(s.public.plaintext).map { c -> c.data }
+                token == Token.E && localEphemeralKeyPair != null -> state.run(localEphemeralKeyPair.public.data) { it.mixHash(localEphemeralKeyPair.public.data) }
+                token == Token.S && localStaticKeyPair != null -> state.runAndAppendInState {
+                    it.encryptAndHash(localStaticKeyPair.public.plaintext).map { c -> c.data }
                 }
 
-                token == Token.EE -> mixKey(e, re)
-                token == Token.ES && role == Role.INITIATOR -> mixKey(e, rs)
-                token == Token.ES && role == Role.RESPONDER -> mixKey(s, re)
-                token == Token.SE && role == Role.INITIATOR -> mixKey(s, re)
-                token == Token.SE && role == Role.RESPONDER -> mixKey(e, rs)
-                token == Token.SS -> mixKey(s, rs)
+                token == Token.EE -> mixKey(localEphemeralKeyPair, remoteEphemeralKey)
+                token == Token.ES && role == Role.INITIATOR -> mixKey(localEphemeralKeyPair, remoteStaticKey)
+                token == Token.ES && role == Role.RESPONDER -> mixKey(localStaticKeyPair, remoteEphemeralKey)
+                token == Token.SE && role == Role.INITIATOR -> mixKey(localStaticKeyPair, remoteEphemeralKey)
+                token == Token.SE && role == Role.RESPONDER -> mixKey(localEphemeralKeyPair, remoteStaticKey)
+                token == Token.SS -> mixKey(localStaticKeyPair, remoteStaticKey)
                 else -> null
             }
         }?.runAndAppendInState { it.encryptAndHash(payload.plainText).map { c -> c.data } }
@@ -53,7 +53,14 @@ data class HandshakeState(
         when {
             state == null -> MessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, symmetricState.digest, state.result) }
+                .let {
+                    MessageResult.FinalHandshakeMessage(
+                        it.first,
+                        it.second,
+                        symmetricState.handshakeHash,
+                        state.result
+                    )
+                }
 
             else -> MessageResult.IntermediateHandshakeMessage(
                 state.current.copy(messagePatterns = rest),
@@ -74,38 +81,40 @@ data class HandshakeState(
             println("Token $token")
             when {
                 state == null -> null
-                token == Token.E && state.current.re == null ->
+                token == Token.E && state.current.remoteEphemeralKey == null ->
                     let {
                         val re =
                             PublicKey(
-                                state.result.value.sliceArray(
-                                    IntRange(
-                                        0,
-                                        KeyAgreementConfiguration.SIZE.value - 1
+                                Data(
+                                    state.result.value.sliceArray(
+                                        IntRange(
+                                            0,
+                                            SharedSecret.SIZE.value - 1
+                                        )
                                     )
                                 )
                             )
                         println("E: read $re")
                         val mixed = state.current.symmetricState.mixHash(re.data)
                         state.copy(
-                            current = state.current.copy(symmetricState = mixed, re = re),
-                            result = Data(state.result.value.drop(KeyAgreementConfiguration.SIZE.value).toByteArray())
+                            current = state.current.copy(symmetricState = mixed, remoteEphemeralKey = re),
+                            result = Data(state.result.value.drop(SharedSecret.SIZE.value).toByteArray())
                         )
                     }
 
-                token == Token.S && state.current.rs == null -> let {
+                token == Token.S && state.current.remoteStaticKey == null -> let {
                     println("S")
-                    val splitAt = KeyAgreementConfiguration.SIZE.value + 16
+                    val splitAt = SharedSecret.SIZE.value + 16
                     val temp =
                         state.result.value.sliceArray(IntRange(0, splitAt - 1))
-                    state.current.symmetricState.decryptAndHash(Ciphertext(temp))?.let {
-                        val publicKey = PublicKey(it.result.value)
+                    state.current.symmetricState.decryptAndHash(Ciphertext(Data(temp)))?.let {
+                        val publicKey = PublicKey(it.result.data)
                         println("Public key $publicKey")
                         println("Trusting $trustedStaticKeys")
                         println("Trusted? ${trustedStaticKeys.contains(publicKey)}")
                         if (trustedStaticKeys.contains(publicKey))
                             state.copy(
-                                current = state.current.copy(symmetricState = it.current, rs = publicKey),
+                                current = state.current.copy(symmetricState = it.current, remoteStaticKey = publicKey),
                                 result = Data(
                                     state.result.value.drop(splitAt).toByteArray()
                                 )
@@ -115,26 +124,26 @@ data class HandshakeState(
                 }
 
                 token == Token.EE -> let {
-                    println("EE: Mixing ${state.current.e} ${state.current.re}")
-                    mixKey(state.current.e, state.current.re)
+                    println("EE: Mixing ${state.current.localEphemeralKeyPair} ${state.current.remoteEphemeralKey}")
+                    mixKey(state.current.localEphemeralKeyPair, state.current.remoteEphemeralKey)
                 }
 
-                token == Token.ES && role == Role.INITIATOR -> mixKey(state.current.e, state.current.rs)
-                token == Token.ES && role == Role.RESPONDER -> mixKey(state.current.s, state.current.re)
+                token == Token.ES && role == Role.INITIATOR -> mixKey(state.current.localEphemeralKeyPair, state.current.remoteStaticKey)
+                token == Token.ES && role == Role.RESPONDER -> mixKey(state.current.localStaticKeyPair, state.current.remoteEphemeralKey)
                 token == Token.SE && role == Role.INITIATOR -> let {
                     println("SE")
-                    mixKey(state.current.s, state.current.re)
+                    mixKey(state.current.localStaticKeyPair, state.current.remoteEphemeralKey)
                 }
 
-                token == Token.SE && role == Role.RESPONDER -> mixKey(state.current.e, state.current.rs)
-                token == Token.SS -> mixKey(state.current.s, state.current.rs)
+                token == Token.SE && role == Role.RESPONDER -> mixKey(state.current.localEphemeralKeyPair, state.current.remoteStaticKey)
+                token == Token.SS -> mixKey(state.current.localStaticKeyPair, state.current.remoteStaticKey)
                 else -> null
             }
         }?.let {
-            it.current.symmetricState.decryptAndHash(Ciphertext(it.result.value))?.let { decrypted ->
+            it.current.symmetricState.decryptAndHash(Ciphertext(it.result))?.let { decrypted ->
                 State(
                     it.current.copy(symmetricState = decrypted.current), Payload(
-                        Data(decrypted.result.value)
+                        decrypted.result.data
                     )
                 )
             }
@@ -144,7 +153,14 @@ data class HandshakeState(
         when {
             state == null -> MessageResult.InsufficientKeyMaterial
             rest.isEmpty() -> symmetricState.split()
-                .let { MessageResult.FinalHandshakeMessage(it.first, it.second, symmetricState.digest, state.result) }
+                .let {
+                    MessageResult.FinalHandshakeMessage(
+                        it.first,
+                        it.second,
+                        symmetricState.handshakeHash,
+                        state.result
+                    )
+                }
 
             else -> MessageResult.IntermediateHandshakeMessage(
                 state.current.copy(messagePatterns = rest),

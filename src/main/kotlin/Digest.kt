@@ -7,7 +7,5 @@ value class Digest(val data: Data) {
         require(data.size == HashFunction.HASH_SIZE)
     }
 
-    val associatedData get() = AssociatedData(data)
-
     val messageAuthenticationKey get() = MessageAuthenticationKey(data)
 }

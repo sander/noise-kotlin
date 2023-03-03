@@ -1,13 +1,11 @@
 package nl.sanderdijkhuis.noise
 
-data class PublicKey(val value: ByteArray) {
+@JvmInline
+value class PublicKey(val data: Data) {
 
-    val data get() = Data(value)
+    init {
+        require(data.size == SharedSecret.SIZE)
+    }
 
-    val plaintext get() = Plaintext(value)
-
-    override fun equals(other: Any?) =
-        this === other || ((other as? PublicKey)?.let { value.contentEquals(it.value) } ?: false)
-
-    override fun hashCode() = value.contentHashCode()
+    val plaintext get() = Plaintext(data)
 }

@@ -1,12 +1,10 @@
 package nl.sanderdijkhuis.noise
 
-import nl.sanderdijkhuis.noise.Size.Companion.valueSize
-
 @JvmInline
-value class CipherKey(val value: ByteArray) {
+value class CipherKey(val data: Data) {
 
     init {
-        require(value.valueSize == SIZE)
+        require(data.size == SIZE)
     }
 
     companion object {

@@ -1,14 +1,10 @@
 package nl.sanderdijkhuis.noise
 
-import nl.sanderdijkhuis.noise.Size.Companion.valueSize
-
 @JvmInline
-value class InputKeyMaterial(val value: ByteArray) {
-
-    val data get() = Data(value)
+value class InputKeyMaterial(val data: Data) {
 
     init {
-        require(value.isEmpty() || value.valueSize == DEFAULT_SIZE || value.valueSize == KeyAgreementConfiguration.SIZE)
+        require(data.isEmpty || data.size == DEFAULT_SIZE || data.size == SharedSecret.SIZE)
     }
 
     companion object {
