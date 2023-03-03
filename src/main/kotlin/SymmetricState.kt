@@ -21,14 +21,14 @@ data class SymmetricState(val cipherState: CipherState, val ck: ChainingKey, val
     fun encryptAndHash(plaintext: Plaintext) = let {
         println("Encrypting and hashing $h $plaintext")
         cipherState.encryptWithAssociatedData(h.associatedData(), plaintext).let {
-            State(mixHash(it.data()), it)
+            State(copy(cipherState = it.current).mixHash(it.result.data()), it.result)
         }
     }
 
     fun decryptAndHash(ciphertext: Ciphertext) = let {
         println("Decrypting and hashing $h $ciphertext")
         cipherState.decryptWithAssociatedData(h.associatedData(), ciphertext)?.let {
-            State(mixHash(ciphertext.data()), it)
+            State(copy(cipherState = it.current).mixHash(ciphertext.data()), it.result)
         }
     }
 

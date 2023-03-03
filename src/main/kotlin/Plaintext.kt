@@ -4,4 +4,6 @@ package nl.sanderdijkhuis.noise
 value class Plaintext(val value: ByteArray) {
 
     val ciphertext get() = Ciphertext(value)
+
+    val data get() = Data(value)
 }
