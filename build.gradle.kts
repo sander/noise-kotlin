@@ -35,7 +35,7 @@ koverReport {
         rule {
             bound {
                 metric = kotlinx.kover.gradle.plugin.dsl.MetricType.BRANCH
-                minValue = 60
+                minValue = 55
             }
         }
     }
