@@ -11,13 +11,15 @@ value class Nonce(val value: ByteArray) {
         require(value.valueSize == SIZE)
     }
 
-    constructor(number: Long) : this(
-        ByteBuffer.allocate(SIZE.value).order(ByteOrder.BIG_ENDIAN).putLong(number).array()
+    constructor(number: ULong) : this(
+        ByteBuffer.allocate(SIZE.value).order(ByteOrder.BIG_ENDIAN).putLong(number.toLong()).array()
     )
 
-    fun increment() = if (value.contentEquals(SIZE.byteArray { 0x11 })) null else Nonce(
-        ByteBuffer.wrap(value).order(ByteOrder.BIG_ENDIAN).long + 1L
-    )
+    fun increment() =
+        if (value.contentEquals(SIZE.byteArray { 0xff.toByte() })) null
+        else Nonce(ByteBuffer.wrap(value).order(ByteOrder.BIG_ENDIAN).long.toULong() + 1u)
+
+    fun toULong() = ByteBuffer.wrap(value).order(ByteOrder.BIG_ENDIAN).long.toULong()
 
     companion object {
 
