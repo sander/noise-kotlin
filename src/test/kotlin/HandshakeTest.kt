@@ -32,22 +32,23 @@ class HandshakeTest {
         val string02 = "Hi"
         val string03 = "Bye"
 
-        val alice01 = alice00.writeMessage(string01.toPayload()) as MessageResult.IntermediateHandshakeMessage
-        val bob01 = bob00.readMessage(alice01.result) as MessageResult.IntermediateHandshakeMessage
+        val alice01 = alice00.writeMessage(string01.toPayload())!!
+        val bob01 = bob00.readMessage(alice01.result)!!
         assert(String(bob01.result.data.value) == string01)
 
-        val bob02 = bob01.state.writeMessage(string02.toPayload()) as MessageResult.IntermediateHandshakeMessage
-        val alice02 = alice01.state.readMessage(bob02.result) as MessageResult.IntermediateHandshakeMessage
+        val bob02 = bob01.state<Handshake>()?.writeMessage(string02.toPayload())!!
+        val alice02 = alice01.state<Handshake>()?.readMessage(bob02.result)!!
         assert(String(alice02.result.data.value) == string02)
 
-        val alice03 = alice02.state.writeMessage(string03.toPayload()) as MessageResult.FinalHandshakeMessage
-        val bob03 = bob02.state.readMessage(alice03.result) as MessageResult.FinalHandshakeMessage
+        val alice03 = alice02.state<Handshake>()?.writeMessage(string03.toPayload())!!
+        val bob03 = bob02.state<Handshake>()?.readMessage(alice03.result)!!
         assert(String(bob03.result.data.value) == string03)
 
         println(bob03)
     }
 
     @Test
+    @Suppress("UNCHECKED_CAST")
     fun testHandshakeNK() {
         val bobStaticKey = JavaCryptography.generateKeyPair()
         val pattern = HandshakePattern.Noise_NK_25519_ChaChaPoly_SHA256
@@ -73,16 +74,16 @@ class HandshakeTest {
         val string02 = "Hi"
         val string03 = "Another message"
 
-        val alice01 = alice00.writeMessage(string01.toPayload()) as MessageResult.IntermediateHandshakeMessage
-        val bob01 = bob00.readMessage(alice01.result) as MessageResult.IntermediateHandshakeMessage
+        val alice01 = alice00.writeMessage(string01.toPayload())!!
+        val bob01 = bob00.readMessage(alice01.result)!!
         assert(String(bob01.result.data.value) == string01)
 
-        val bob02 = bob01.state.writeMessage(string02.toPayload()) as MessageResult.FinalHandshakeMessage
-        val alice02 = alice01.state.readMessage(bob02.result) as MessageResult.FinalHandshakeMessage
+        val bob02 = bob01.state<Handshake>()?.writeMessage(string02.toPayload())!!
+        val alice02 = alice01.state<Handshake>()?.readMessage(bob02.result)!!
         assert(String(alice02.result.data.value) == string02)
 
-        val bob03 = bob02.responderCipherState.encrypt(Data.empty, string03.toPayload().plainText)
-        val alice03 = alice02.responderCipherState.decrypt(Data.empty, bob03.result)!!
+        val bob03 = bob02.state<Transport>()!!.responderCipherState.encrypt(Data.empty, string03.toPayload().plainText)
+        val alice03 = alice02.state<Transport>()!!.responderCipherState.decrypt(Data.empty, bob03.result)!!
         assert(String(alice03.result.data.value) == string03)
 
         println(alice02)

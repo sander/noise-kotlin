@@ -9,7 +9,7 @@ data class Handshake(
     val remoteStaticKey: PublicKey? = null,
     val remoteEphemeralKey: PublicKey? = null,
     val trustedStaticKeys: Set<PublicKey> = emptySet()
-) {
+) : MessageType {
 
     private val cryptography get() = symmetry.cryptography
 
@@ -24,7 +24,7 @@ data class Handshake(
     ) =
         f(value.symmetry)?.let { s -> State(value.copy(symmetry = s.value), result + s.result) }
 
-    fun writeMessage(payload: Payload) = let {
+    fun writeMessage(payload: Payload): State<out MessageType, Data>? = let {
         val init: State<Handshake, Data>? = State(this, Data.empty)
         println("Writing ${messagePatterns.first()}")
         val state = messagePatterns.first().fold(init) { state, token ->
@@ -55,25 +55,24 @@ data class Handshake(
         }?.runAndAppendInState { it.encryptAndHash(payload.plainText).map { c -> c.data } }
         val rest = messagePatterns.drop(1)
         when {
-            state == null -> MessageResult.InsufficientKeyMaterial
+            state == null -> null
             rest.isEmpty() -> symmetry.split()
                 .let {
-                    MessageResult.FinalHandshakeMessage(
-                        it.first,
-                        it.second,
-                        symmetry.handshakeHash.digest,
+                    State(
+                        Transport(
+                            it.first,
+                            it.second,
+                            symmetry.handshakeHash.digest
+                        ),
                         state.result
                     )
                 }
 
-            else -> MessageResult.IntermediateHandshakeMessage(
-                state.value.copy(messagePatterns = rest),
-                state.result
-            )
+            else -> State(state.value.copy(messagePatterns = rest), state.result)
         }
     }
 
-    fun readMessage(data: Data) = let {
+    fun readMessage(data: Data): State<out MessageType, Payload>? = let {
         println("Reading ${messagePatterns.first()}")
         val init: State<Handshake, Data>? = State(this, data)
         val state = messagePatterns.first().fold(init) { state, token ->
@@ -167,21 +166,24 @@ data class Handshake(
 
         val rest = messagePatterns.drop(1)
         when {
-            state == null -> MessageResult.InsufficientKeyMaterial
+            state == null -> null
             rest.isEmpty() -> symmetry.split()
                 .let {
-                    MessageResult.FinalHandshakeMessage(
-                        it.first,
-                        it.second,
-                        symmetry.handshakeHash.digest,
+                    State(
+                        Transport(
+                            it.first,
+                            it.second,
+                            symmetry.handshakeHash.digest
+                        ),
                         state.result
                     )
                 }
 
-            else -> MessageResult.IntermediateHandshakeMessage(
-                state.value.copy(messagePatterns = rest),
-                state.result
-            )
+            else ->
+                State(
+                    state.value.copy(messagePatterns = rest),
+                    state.result
+                )
         }
     }
 
