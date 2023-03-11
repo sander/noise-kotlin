@@ -192,14 +192,14 @@ data class Handshake(
             cryptography: Cryptography,
             pattern: HandshakePattern,
             role: Role,
-            prologue: Prologue,
+            prologue: Data,
             s: Pair<PublicKey, PrivateKey>? = null,
             e: Pair<PublicKey, PrivateKey>? = null,
             rs: PublicKey? = null,
             re: PublicKey? = null,
             trustedStaticKeys: Set<PublicKey> = emptySet()
         ): Handshake? {
-            var state = Symmetry.initialize(cryptography, pattern.name).mixHash(prologue.data)
+            var state = Symmetry.initialize(cryptography, pattern.name).mixHash(prologue)
             if (pattern.preSharedMessagePatterns.isNotEmpty()) {
                 for (p in pattern.preSharedMessagePatterns[0]) {
                     if (p == Token.S && role == Role.INITIATOR && s != null) {
