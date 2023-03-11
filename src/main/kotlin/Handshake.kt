@@ -53,7 +53,6 @@ data class Handshake(
                 else -> null
             }
         }?.runAndAppendInState { it.encryptAndHash(payload.plainText).map { c -> c.data } }
-            ?.map { Message(it) }
         val rest = messagePatterns.drop(1)
         when {
             state == null -> MessageResult.InsufficientKeyMaterial
@@ -74,9 +73,9 @@ data class Handshake(
         }
     }
 
-    fun readMessage(message: Message) = let {
+    fun readMessage(data: Data) = let {
         println("Reading ${messagePatterns.first()}")
-        val init: State<Handshake, Data>? = State(this, message.data)
+        val init: State<Handshake, Data>? = State(this, data)
         val state = messagePatterns.first().fold(init) { state, token ->
             fun mixKey(local: Pair<PublicKey, PrivateKey>?, remote: PublicKey?) = when {
                 local == null || remote == null -> null
