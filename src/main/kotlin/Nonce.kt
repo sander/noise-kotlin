@@ -1,30 +1,22 @@
 package nl.sanderdijkhuis.noise
 
 import nl.sanderdijkhuis.noise.Size.Companion.valueSize
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 @JvmInline
-value class Nonce(val value: ByteArray) {
+value class Nonce(val value: ULong) {
 
-    init {
-        require(value.valueSize == SIZE)
-    }
+    val bytes: ByteArray get() = SIZE.byteArray { (value shr (it * 8)).toByte() }
 
-    constructor(number: ULong) : this(
-        ByteBuffer.allocate(SIZE.value).order(ByteOrder.BIG_ENDIAN).putLong(number.toLong()).array()
-    )
-
-    fun increment() =
-        if (value.contentEquals(SIZE.byteArray { 0xff.toByte() })) null
-        else Nonce(ByteBuffer.wrap(value).order(ByteOrder.BIG_ENDIAN).long.toULong() + 1u)
-
-    fun toULong() = ByteBuffer.wrap(value).order(ByteOrder.BIG_ENDIAN).long.toULong()
+    fun increment(): Nonce? = if (value == ULong.MAX_VALUE) null else Nonce(value + 1uL)
 
     companion object {
 
         val SIZE = Size(8)
 
-        val zero get() = Nonce(SIZE.byteArray { 0x00 })
+        val zero get() = Nonce(0uL)
+
+        fun from(byteArray: ByteArray): Nonce? =
+            if (byteArray.valueSize > SIZE) null
+            else Nonce(byteArray.mapIndexed { i, b -> (i * b).toULong() }.sum())
     }
 }

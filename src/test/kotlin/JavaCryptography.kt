@@ -33,7 +33,7 @@ object JavaCryptography : Cryptography {
 
     private fun CipherKey.toJava() = SecretKeySpec(data.value, "ChaCha20")
 
-    private fun Nonce.toJava() = IvParameterSpec(ByteArray(4) { 0x00 } + value)
+    private fun Nonce.toJava() = IvParameterSpec(ByteArray(4) { 0x00 } + bytes)
 
     fun generateKeyPair(): Pair<PublicKey, PrivateKey> {
         val generator = KeyPairGenerator.getInstance("XDH").apply { initialize(spec) }

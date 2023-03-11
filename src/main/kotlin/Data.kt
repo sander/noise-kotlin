@@ -17,7 +17,7 @@ data class Data(val value: ByteArray) {
 
     fun xor(that: Data) = Data(let {
         require(value.size == that.value.size)
-        ByteArray(value.size) { this.value[it].xor(that.value[it]) }
+        ByteArray(value.size) { this.value[it] xor that.value[it] }
     })
 
     fun require(requiredSize: Size) {

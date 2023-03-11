@@ -18,7 +18,7 @@ class JavaCryptographyTest {
     @Test
     fun testEncryption() {
         val key = CipherKey(Data(CipherKey.SIZE.byteArray { 0x12 }))
-        val nonce = Nonce(Nonce.SIZE.byteArray { 0x34 })
+        val nonce = Nonce.from(Nonce.SIZE.byteArray { 0x34 })!!
         val plaintext = Plaintext(Data("hello".encodeToByteArray()))
         val associatedData = Data("world".encodeToByteArray())
         val ciphertext = JavaCryptography.encrypt(key, nonce, associatedData, plaintext)
