@@ -1,5 +1,8 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.cryptography.AssociatedData
+import nl.sanderdijkhuis.noise.cryptography.Plaintext
+import nl.sanderdijkhuis.noise.data.Data
 import org.junit.jupiter.api.Test
 
 class HandshakeTest {
@@ -9,39 +12,39 @@ class HandshakeTest {
     @Test
     fun testHandshakeXN() {
         val aliceStaticKey = JavaCryptography.generateKeyPair()
-        val pattern = HandshakePattern.Noise_XN_25519_ChaChaPoly_SHA256
-        val prologue = Prologue(Data.empty)
-        val alice00 = HandshakeState.initialize(
+        val pattern = Handshake.Noise_XN_25519_ChaChaPoly_SHA256
+        val prologue = Data.empty
+        val alice00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.INITIATOR,
             prologue,
-            e = JavaCryptography.generateKeyPair(),
-            s = aliceStaticKey
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
+            localStaticKeyPair = aliceStaticKey
         )!!
-        val bob00 = HandshakeState.initialize(
+        val bob00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.RESPONDER,
             prologue,
-            e = JavaCryptography.generateKeyPair(),
-            trustedStaticKeys = setOf(aliceStaticKey.public)
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
+            trustedStaticKeys = setOf(aliceStaticKey.first)
         )!!
 
         val string01 = "Hello"
         val string02 = "Hi"
         val string03 = "Bye"
 
-        val alice01 = alice00.writeMessage(string01.toPayload()) as MessageResult.IntermediateHandshakeMessage
-        val bob01 = bob00.readMessage(alice01.result) as MessageResult.IntermediateHandshakeMessage
+        val alice01 = alice00.writeMessage(string01.toPayload())!!
+        val bob01 = bob00.readMessage(alice01.result)!!
         assert(String(bob01.result.data.value) == string01)
 
-        val bob02 = bob01.state.writeMessage(string02.toPayload()) as MessageResult.IntermediateHandshakeMessage
-        val alice02 = alice01.state.readMessage(bob02.result) as MessageResult.IntermediateHandshakeMessage
+        val bob02 = bob01.state<Handshake>()?.writeMessage(string02.toPayload())!!
+        val alice02 = alice01.state<Handshake>()?.readMessage(bob02.result)!!
         assert(String(alice02.result.data.value) == string02)
 
-        val alice03 = alice02.state.writeMessage(string03.toPayload()) as MessageResult.FinalHandshakeMessage
-        val bob03 = bob02.state.readMessage(alice03.result) as MessageResult.FinalHandshakeMessage
+        val alice03 = alice02.state<Handshake>()?.writeMessage(string03.toPayload())!!
+        val bob03 = bob02.state<Handshake>()?.readMessage(alice03.result)!!
         assert(String(bob03.result.data.value) == string03)
 
         println(bob03)
@@ -50,39 +53,44 @@ class HandshakeTest {
     @Test
     fun testHandshakeNK() {
         val bobStaticKey = JavaCryptography.generateKeyPair()
-        val pattern = HandshakePattern.Noise_NK_25519_ChaChaPoly_SHA256
-        val prologue = Prologue(Data.empty)
-        val alice00 = HandshakeState.initialize(
+        val pattern = Handshake.Noise_NK_25519_ChaChaPoly_SHA256
+        val prologue = Data.empty
+        val alice00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.INITIATOR,
             prologue,
-            e = JavaCryptography.generateKeyPair(),
-            rs = bobStaticKey.public,
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
+            remoteStaticKey = bobStaticKey.first,
         )!!
-        val bob00 = HandshakeState.initialize(
+        val bob00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.RESPONDER,
             prologue,
-            e = JavaCryptography.generateKeyPair(),
-            s = bobStaticKey
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
+            localStaticKeyPair = bobStaticKey
         )!!
 
         val string01 = "Hello"
         val string02 = "Hi"
         val string03 = "Another message"
 
-        val alice01 = alice00.writeMessage(string01.toPayload()) as MessageResult.IntermediateHandshakeMessage
-        val bob01 = bob00.readMessage(alice01.result) as MessageResult.IntermediateHandshakeMessage
+        val alice01 = alice00.writeMessage(string01.toPayload())!!
+        val bob01 = bob00.readMessage(alice01.result)!!
         assert(String(bob01.result.data.value) == string01)
 
-        val bob02 = bob01.state.writeMessage(string02.toPayload()) as MessageResult.FinalHandshakeMessage
-        val alice02 = alice01.state.readMessage(bob02.result) as MessageResult.FinalHandshakeMessage
+        val bob02 = bob01.state<Handshake>()?.writeMessage(string02.toPayload())!!
+        val alice02 = alice01.state<Handshake>()?.readMessage(bob02.result)!!
         assert(String(alice02.result.data.value) == string02)
 
-        val bob03 = bob02.responderCipherState.encryptWithAssociatedData(Data.empty, string03.toPayload().plainText)
-        val alice03 = alice02.responderCipherState.decryptWithAssociatedData(Data.empty, bob03.result)!!
+        val bob03 =
+            bob02.state<Transport>()!!.responderCipherState.encrypt(
+                AssociatedData(Data.empty),
+                Plaintext(string03.toPayload().data)
+            )
+        val alice03 =
+            alice02.state<Transport>()!!.responderCipherState.decrypt(AssociatedData(Data.empty), bob03.result)!!
         assert(String(alice03.result.data.value) == string03)
 
         println(alice02)

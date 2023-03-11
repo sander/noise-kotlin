@@ -59,6 +59,12 @@ Then, implement [`Cryptography`](src/main/kotlin/Cryptography.kt) for your platf
 - Use only Kotlin types and functions, and nothing directly from Java SE or libraries.
     - Consequence: all dangerous cryptography implementation is behind an interface, which users need to implement using native platform functions.
 
+## Test vectors
+
+[Test vectors](https://github.com/noiseprotocol/noise_wiki/wiki/Test-vectors) are used from:
+
+- [snow.txt](src/test/resources/vectors/snow.txt) from [mcginty/snow](https://github.com/mcginty/snow/blob/375ba067b54f09ecaaa4211f9dd48fdc7f43fa50/tests/vectors/snow.txt)
+
 ## Related resources
 
 - [License](LICENSE.md)

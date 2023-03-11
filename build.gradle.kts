@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.8.10"
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
+    kotlin("plugin.serialization") version "1.8.10"
 }
 
 group = "nl.sanderdijkhuis"
@@ -14,6 +15,7 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 }
 
 kotlin {

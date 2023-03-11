@@ -1,5 +1,7 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.cryptography.*
+import nl.sanderdijkhuis.noise.data.Data
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
@@ -33,12 +35,12 @@ object JavaCryptography : Cryptography {
 
     private fun CipherKey.toJava() = SecretKeySpec(data.value, "ChaCha20")
 
-    private fun Nonce.toJava() = IvParameterSpec(ByteArray(4) { 0x00 } + value)
+    private fun Nonce.toJava() = IvParameterSpec(ByteArray(4) { 0x00 } + bytes)
 
-    fun generateKeyPair(): KeyPair {
+    fun generateKeyPair(): Pair<PublicKey, PrivateKey> {
         val generator = KeyPairGenerator.getInstance("XDH").apply { initialize(spec) }
         val pair = generator.generateKeyPair()
-        return KeyPair(
+        return Pair(
             PublicKey(Data(pair.public.encoded.sliceArray(IntRange(12, 43)))),
             PrivateKey((pair.private as XECPrivateKey).scalar.get())
         )
@@ -54,22 +56,22 @@ object JavaCryptography : Cryptography {
     override fun encrypt(
         key: CipherKey,
         nonce: Nonce,
-        associatedData: Data,
+        associatedData: AssociatedData,
         plaintext: Plaintext
     ) = Ciphertext(Data(with(cipher) {
         init(Cipher.ENCRYPT_MODE, key.toJava(), nonce.toJava())
-        updateAAD(associatedData.value)
+        updateAAD(associatedData.data.value)
         doFinal(plaintext.data.value)
     }))
 
     override fun decrypt(
         key: CipherKey,
         nonce: Nonce,
-        associatedData: Data,
+        associatedData: AssociatedData,
         ciphertext: Ciphertext
     ) = with(cipher) {
         init(Cipher.DECRYPT_MODE, key.toJava(), nonce.toJava())
-        updateAAD(associatedData.value)
+        updateAAD(associatedData.data.value)
         doFinal(ciphertext.data.value)
     }?.let { Plaintext(Data(it)) }
 

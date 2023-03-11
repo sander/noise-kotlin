@@ -1,5 +1,7 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.data.Data
+import nl.sanderdijkhuis.noise.data.Size
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
@@ -11,9 +13,9 @@ class DataTest {
     @Test
     fun testSize() {
         assertDoesNotThrow { Data(ByteArray(0)) }
-        assertDoesNotThrow { Data(ByteArray(Size.MAX_MESSAGE.value)) }
-        assertDoesNotThrow { Data(ByteArray(Size.MAX_MESSAGE.value - 1)) }
-        assertThrows<IllegalArgumentException> { Data(ByteArray(Size.MAX_MESSAGE.value + 1)) }
+        assertDoesNotThrow { Data(ByteArray(Size.MAX_MESSAGE.integerValue)) }
+        assertDoesNotThrow { Data(ByteArray(Size.MAX_MESSAGE.integerValue - 1)) }
+        assertThrows<IllegalArgumentException> { Data(ByteArray(Size.MAX_MESSAGE.integerValue + 1)) }
     }
 
     @Test
