@@ -2,13 +2,16 @@ package nl.sanderdijkhuis.noise
 
 data class SymmetricState(val cipherState: CipherState, val key: ChainingKey, val handshakeHash: HandshakeHash) {
 
+    @JvmInline
+    value class ChainingKey(val digest: Digest)
+
     val cryptography get() = cipherState.cryptography
 
     fun mixKey(inputKeyMaterial: InputKeyMaterial) = let {
         val result = deriveKeys(cryptography, key, inputKeyMaterial)
         copy(
             cipherState = CipherState(cryptography = cryptography, key = result.second.cipherKey),
-            key = result.first.chainingKey
+            key = ChainingKey(result.first.digest)
         )
     }
 

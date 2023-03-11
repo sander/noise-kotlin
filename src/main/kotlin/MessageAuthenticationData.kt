@@ -4,6 +4,4 @@ package nl.sanderdijkhuis.noise
 value class MessageAuthenticationData(val digest: Digest) {
 
     val cipherKey get() = CipherKey(digest.data)
-
-    val chainingKey get() = ChainingKey(digest)
 }
