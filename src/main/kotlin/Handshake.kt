@@ -40,7 +40,6 @@ data class Handshake(
 
     fun writeMessage(payload: Payload): State<out MessageType, Data>? = let {
         val init: State<Handshake, Data>? = State(this, Data.empty)
-        println("Writing ${messagePatterns.first()}")
         val state = messagePatterns.first().fold(init) { state, token ->
             fun mixKey(local: Pair<PublicKey, PrivateKey>?, remote: PublicKey?) = when {
                 local == null || remote == null -> null
@@ -87,15 +86,12 @@ data class Handshake(
     }
 
     fun readMessage(data: Data): State<out MessageType, Payload>? = let {
-        println("Reading ${messagePatterns.first()}")
         val init: State<Handshake, Data>? = State(this, data)
         val state = messagePatterns.first().fold(init) { state, token ->
             fun mixKey(local: Pair<PublicKey, PrivateKey>?, remote: PublicKey?) = when {
                 local == null || remote == null -> null
                 else -> state?.run { s -> s.mixKey(cryptography.agree(local.second, remote)) }
             }
-            println("State $state")
-            println("Token $token")
             when {
                 state == null -> null
                 token == Token.E && state.value.remoteEphemeralKey == null ->
@@ -111,7 +107,6 @@ data class Handshake(
                                     )
                                 )
                             )
-                        println("E: read $re")
                         val mixed = state.value.symmetry.mixHash(re.data)
                         state.copy(
                             value = state.value.copy(symmetry = mixed, remoteEphemeralKey = re),
@@ -120,15 +115,11 @@ data class Handshake(
                     }
 
                 token == Token.S && state.value.remoteStaticKey == null -> let {
-                    println("S")
                     val splitAt = SharedSecret.SIZE.value.toInt() + 16
                     val temp =
                         state.result.value.sliceArray(IntRange(0, splitAt - 1))
                     state.value.symmetry.decryptAndHash(Ciphertext(Data(temp)))?.let {
                         val publicKey = PublicKey(it.result.data)
-                        println("Public key $publicKey")
-                        println("Trusting $trustedStaticKeys")
-                        println("Trusted? ${trustedStaticKeys.contains(publicKey)}")
                         if (trustedStaticKeys.contains(publicKey))
                             state.copy(
                                 value = state.value.copy(symmetry = it.value, remoteStaticKey = publicKey),
@@ -141,7 +132,6 @@ data class Handshake(
                 }
 
                 token == Token.EE -> let {
-                    println("EE: Mixing ${state.value.localEphemeralKeyPair} ${state.value.remoteEphemeralKey}")
                     mixKey(state.value.localEphemeralKeyPair, state.value.remoteEphemeralKey)
                 }
 
@@ -156,7 +146,6 @@ data class Handshake(
                 )
 
                 token == Token.SE && role == Role.INITIATOR -> let {
-                    println("SE")
                     mixKey(state.value.localStaticKeyPair, state.value.remoteEphemeralKey)
                 }
 
