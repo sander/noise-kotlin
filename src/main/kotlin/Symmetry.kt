@@ -1,6 +1,6 @@
 package nl.sanderdijkhuis.noise
 
-data class SymmetricState(val cipherState: CipherState, val key: ChainingKey, val handshakeHash: HandshakeHash) {
+data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash: HandshakeHash) {
 
     @JvmInline
     value class ChainingKey(val digest: Digest)
@@ -8,13 +8,13 @@ data class SymmetricState(val cipherState: CipherState, val key: ChainingKey, va
     @JvmInline
     value class HandshakeHash(val digest: Digest)
 
-    val cryptography get() = cipherState.cryptography
+    val cryptography get() = cipher.cryptography
 
     fun mixKey(inputKeyMaterial: InputKeyMaterial) = let {
-        val result = deriveKeys(cryptography, key, inputKeyMaterial)
+        val (chainingKey, cipherKey) = deriveKeys(cryptography, key, inputKeyMaterial)
         copy(
-            cipherState = CipherState(cryptography = cryptography, key = result.second.cipherKey),
-            key = ChainingKey(result.first.digest)
+            cipher = Cipher(cryptography = cryptography, key = cipherKey.cipherKey),
+            key = ChainingKey(chainingKey.digest)
         )
     }
 
@@ -26,23 +26,23 @@ data class SymmetricState(val cipherState: CipherState, val key: ChainingKey, va
 
     fun encryptAndHash(plaintext: Plaintext) = let {
         println("Encrypting and hashing $handshakeHash $plaintext")
-        cipherState.encrypt(handshakeHash.digest.data, plaintext).let {
-            State(copy(cipherState = it.current).mixHash(it.result.data), it.result)
+        cipher.encrypt(handshakeHash.digest.data, plaintext).let {
+            State(copy(cipher = it.value).mixHash(it.result.data), it.result)
         }
     }
 
     fun decryptAndHash(ciphertext: Ciphertext) = let {
         println("Decrypting and hashing $handshakeHash $ciphertext")
-        cipherState.decrypt(handshakeHash.digest.data, ciphertext)?.let {
-            State(copy(cipherState = it.current).mixHash(ciphertext.data), it.result)
+        cipher.decrypt(handshakeHash.digest.data, ciphertext)?.let {
+            State(copy(cipher = it.value).mixHash(ciphertext.data), it.result)
         }
     }
 
     fun split() = let {
         val zeroLen = InputKeyMaterial(Data.empty)
         val temporaryKeys = deriveKeys(cryptography, key, zeroLen)
-        val c1 = CipherState(cryptography, temporaryKeys.first.cipherKey)
-        val c2 = CipherState(cryptography, temporaryKeys.second.cipherKey)
+        val c1 = Cipher(cryptography, temporaryKeys.first.cipherKey)
+        val c2 = Cipher(cryptography, temporaryKeys.second.cipherKey)
         Pair(c1, c2)
     }
 
@@ -55,8 +55,8 @@ data class SymmetricState(val cipherState: CipherState, val key: ChainingKey, va
             else
                 cryptography.hash(protocolName.data)
             val ck = ChainingKey(h)
-            val state = CipherState(cryptography)
-            SymmetricState(state, ck, HandshakeHash(h))
+            val state = Cipher(cryptography)
+            Symmetry(state, ck, HandshakeHash(h))
         }
 
         private val BLOCK_SIZE = Size(64)

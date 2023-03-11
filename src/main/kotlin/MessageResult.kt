@@ -4,11 +4,11 @@ sealed interface MessageResult<T> {
 
     object InsufficientKeyMaterial : MessageResult<Nothing>
 
-    data class IntermediateHandshakeMessage<T>(val state: HandshakeState, val result: T) : MessageResult<T>
+    data class IntermediateHandshakeMessage<T>(val state: Handshake, val result: T) : MessageResult<T>
 
     data class FinalHandshakeMessage<T>(
-        val initiatorCipherState: CipherState,
-        val responderCipherState: CipherState,
+        val initiatorCipherState: Cipher,
+        val responderCipherState: Cipher,
         val handshakeHash: Digest,
         val result: T
     ) : MessageResult<T>

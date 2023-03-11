@@ -11,7 +11,7 @@ class HandshakeTest {
         val aliceStaticKey = JavaCryptography.generateKeyPair()
         val pattern = HandshakePattern.Noise_XN_25519_ChaChaPoly_SHA256
         val prologue = Prologue(Data.empty)
-        val alice00 = HandshakeState.initialize(
+        val alice00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.INITIATOR,
@@ -19,7 +19,7 @@ class HandshakeTest {
             e = JavaCryptography.generateKeyPair(),
             s = aliceStaticKey
         )!!
-        val bob00 = HandshakeState.initialize(
+        val bob00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.RESPONDER,
@@ -52,7 +52,7 @@ class HandshakeTest {
         val bobStaticKey = JavaCryptography.generateKeyPair()
         val pattern = HandshakePattern.Noise_NK_25519_ChaChaPoly_SHA256
         val prologue = Prologue(Data.empty)
-        val alice00 = HandshakeState.initialize(
+        val alice00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.INITIATOR,
@@ -60,7 +60,7 @@ class HandshakeTest {
             e = JavaCryptography.generateKeyPair(),
             rs = bobStaticKey.public,
         )!!
-        val bob00 = HandshakeState.initialize(
+        val bob00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.RESPONDER,

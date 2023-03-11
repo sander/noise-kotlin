@@ -1,6 +1,6 @@
 package nl.sanderdijkhuis.noise
 
-data class State<S, A>(val current: S, val result: A) {
+data class State<S, A>(val value: S, val result: A) {
 
-    fun <B>map(f: (A) -> B) = State(current, f(result))
+    fun <B>map(f: (A) -> B) = State(value, f(result))
 }
