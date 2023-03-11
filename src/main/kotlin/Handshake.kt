@@ -27,62 +27,38 @@ data class Handshake(
 
     private val cryptography get() = symmetry.cryptography
 
-    private fun State<Handshake, Data>.run(
-        d: Data = nl.sanderdijkhuis.noise.data.Data.empty,
-        f: (Symmetry) -> Symmetry
-    ) =
+    private fun State<Handshake, Data>.run(d: Data = Data.empty, f: (Symmetry) -> Symmetry) =
         copy(value = value.copy(symmetry = f(value.symmetry)), result = result + d)
 
-    private fun State<Handshake, Data>.runAndAppendInState(
-        f: (Symmetry) -> State<Symmetry, Data>?
-    ) =
+    private fun State<Handshake, Data>.append(f: (Symmetry) -> State<Symmetry, Data>?) =
         f(value.symmetry)?.let { s -> State(value.copy(symmetry = s.value), result + s.result) }
 
     fun writeMessage(payload: Payload): State<out MessageType, Data>? = let {
-        val init: State<Handshake, Data>? = State(this, Data.empty)
-        val state = messagePatterns.first().fold(init) { state, token ->
-            fun mixKey(local: Pair<PublicKey, PrivateKey>?, remote: PublicKey?) = when {
-                local == null || remote == null -> null
-                else -> state?.run { s -> s.mixKey(cryptography.agree(local.second, remote)) }
+        messagePatterns.first().fold(State(this, Data.empty) as State<Handshake, Data>?) { state, token ->
+            state?.let { s ->
+                fun maybeMixKey(local: Pair<PublicKey, PrivateKey>?, remote: PublicKey?) =
+                    local?.let { l -> remote?.let { r -> s.run { it.mixKey(cryptography.agree(l.second, r)) } } }
+                when {
+                    token == Token.E -> localEphemeralKeyPair?.let { e -> s.run(e.first.data) { it.mixHash(e.first.data) } }
+                    token == Token.S -> localStaticKeyPair?.let { p -> s.append { it.encryptAndHash(p.first.plaintext) } }
+                    token == Token.EE -> maybeMixKey(localEphemeralKeyPair, remoteEphemeralKey)
+                    token == Token.ES && role == Role.INITIATOR -> maybeMixKey(localEphemeralKeyPair, remoteStaticKey)
+                    token == Token.ES && role == Role.RESPONDER -> maybeMixKey(localStaticKeyPair, remoteEphemeralKey)
+                    token == Token.SE && role == Role.INITIATOR -> maybeMixKey(localStaticKeyPair, remoteEphemeralKey)
+                    token == Token.SE && role == Role.RESPONDER -> maybeMixKey(localEphemeralKeyPair, remoteStaticKey)
+                    token == Token.SS -> maybeMixKey(localStaticKeyPair, remoteStaticKey)
+                    else -> null
+                }
             }
-            when {
-                state == null -> null
-                token == Token.E && localEphemeralKeyPair != null -> state.run(localEphemeralKeyPair.first.data) {
-                    it.mixHash(
-                        localEphemeralKeyPair.first.data
-                    )
-                }
-
-                token == Token.S && localStaticKeyPair != null -> state.runAndAppendInState {
-                    it.encryptAndHash(localStaticKeyPair.first.plaintext).map { c -> c.data }
-                }
-
-                token == Token.EE -> mixKey(localEphemeralKeyPair, remoteEphemeralKey)
-                token == Token.ES && role == Role.INITIATOR -> mixKey(localEphemeralKeyPair, remoteStaticKey)
-                token == Token.ES && role == Role.RESPONDER -> mixKey(localStaticKeyPair, remoteEphemeralKey)
-                token == Token.SE && role == Role.INITIATOR -> mixKey(localStaticKeyPair, remoteEphemeralKey)
-                token == Token.SE && role == Role.RESPONDER -> mixKey(localEphemeralKeyPair, remoteStaticKey)
-                token == Token.SS -> mixKey(localStaticKeyPair, remoteStaticKey)
-                else -> null
-            }
-        }?.runAndAppendInState { it.encryptAndHash(Plaintext(payload.data)).map { c -> c.data } }
-        val rest = messagePatterns.drop(1)
-        when {
-            state == null -> null
-            rest.isEmpty() -> symmetry.split()
-                .let {
-                    State(
-                        Transport(
-                            it.first,
-                            it.second,
-                            symmetry.handshakeHash.digest
-                        ),
-                        state.result
-                    )
-                }
-
-            else -> State(state.value.copy(messagePatterns = rest), state.result)
         }
+            ?.append { it.encryptAndHash(Plaintext(payload.data)) }
+            ?.let { s ->
+                val rest = messagePatterns.drop(1)
+                if (rest.isEmpty()) symmetry.split().let {
+                    State(Transport(it.first, it.second, symmetry.handshakeHash.digest), s.result)
+                }
+                else State(s.value.copy(messagePatterns = rest), s.result)
+            }
     }
 
     fun readMessage(data: Data): State<out MessageType, Payload>? = let {

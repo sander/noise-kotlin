@@ -41,7 +41,7 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
 
     fun encryptAndHash(plaintext: Plaintext) =
         cipher.encrypt(AssociatedData(handshakeHash.digest.data), plaintext).let {
-            State(copy(cipher = it.value).mixHash(it.result.data), it.result)
+            State(copy(cipher = it.value).mixHash(it.result.data), it.result.data)
         }
 
     fun decryptAndHash(ciphertext: Ciphertext) =
