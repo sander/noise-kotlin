@@ -23,6 +23,12 @@ data class Data(val value: ByteArray) {
         require(size == requiredSize) { "Invalid size, must be ${requiredSize.value}" }
     }
 
+    fun readFirst(size: Size): Pair<Data, Data>? = if (this.size >= size) let {
+        val first = value.sliceArray(IntRange(0, size.integerValue - 1))
+        val second = value.sliceArray(IntRange(size.integerValue, value.size - 1))
+        Pair(Data(first), Data(second))
+    } else null
+
     override fun equals(other: Any?) =
         this === other || ((other as? Data)?.let { value.contentEquals(it.value) } ?: false)
 

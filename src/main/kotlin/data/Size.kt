@@ -9,6 +9,8 @@ value class Size(val value: UShort) {
 
     fun byteArray(f: (Int) -> Byte) = ByteArray(value.toInt(), f)
 
+    operator fun plus(size: Size) = (value + size.value).takeIf { it <= UShort.MAX_VALUE }?.let { Size(it.toUShort()) }
+
     companion object {
 
         val MAX_MESSAGE = Size(UShort.MAX_VALUE)

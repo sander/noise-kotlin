@@ -28,8 +28,8 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
 
     val cryptography get() = cipher.cryptography
 
-    fun mixKey(inputKeyMaterial: SharedSecret) = let {
-        val (chainingKey, cipherKey) = deriveKeys(cryptography, key, InputKeyMaterial(inputKeyMaterial.data))
+    fun mixKey(sharedSecret: SharedSecret) = let {
+        val (chainingKey, cipherKey) = deriveKeys(cryptography, key, InputKeyMaterial(sharedSecret.data))
         copy(
             cipher = Cipher(cryptography = cryptography, key = CipherKey(cipherKey.data)),
             key = ChainingKey(chainingKey)
