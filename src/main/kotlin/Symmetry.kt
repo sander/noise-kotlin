@@ -13,8 +13,8 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
     fun mixKey(inputKeyMaterial: InputKeyMaterial) = let {
         val (chainingKey, cipherKey) = deriveKeys(cryptography, key, inputKeyMaterial)
         copy(
-            cipher = Cipher(cryptography = cryptography, key = cipherKey.cipherKey),
-            key = ChainingKey(chainingKey.digest)
+            cipher = Cipher(cryptography = cryptography, key = CipherKey(cipherKey.data)),
+            key = ChainingKey(chainingKey)
         )
     }
 
@@ -41,8 +41,8 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
     fun split() = let {
         val zeroLen = InputKeyMaterial(Data.empty)
         val temporaryKeys = deriveKeys(cryptography, key, zeroLen)
-        val c1 = Cipher(cryptography, temporaryKeys.first.cipherKey)
-        val c2 = Cipher(cryptography, temporaryKeys.second.cipherKey)
+        val c1 = Cipher(cryptography, CipherKey(temporaryKeys.first.data))
+        val c2 = Cipher(cryptography, CipherKey(temporaryKeys.second.data))
         Pair(c1, c2)
     }
 
@@ -73,20 +73,18 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
             val innerPadding = block { 0x36 }
             val outerPadding = block { 0x5c }
 
-            val digest =
-                cryptography.hash(keyData.xor(outerPadding) + cryptography.hash(keyData.xor(innerPadding) + data).data)
-            MessageAuthenticationData(digest)
+            cryptography.hash(keyData.xor(outerPadding) + cryptography.hash(keyData.xor(innerPadding) + data).data)
         }
 
         internal fun deriveKeys(cryptography: Cryptography, key: ChainingKey, material: InputKeyMaterial) = let {
             val temporaryKey =
                 authenticateMessage(cryptography, key.digest.messageAuthenticationKey, material.data)
             val output1 =
-                authenticateMessage(cryptography, temporaryKey.digest.messageAuthenticationKey, Data(byteArrayOf(0x01)))
+                authenticateMessage(cryptography, temporaryKey.messageAuthenticationKey, Data(byteArrayOf(0x01)))
             val output2 = authenticateMessage(
                 cryptography,
-                temporaryKey.digest.messageAuthenticationKey,
-                output1.digest.data + Data(byteArrayOf(0x02))
+                temporaryKey.messageAuthenticationKey,
+                output1.data + Data(byteArrayOf(0x02))
             )
             Pair(output1, output2)
         }
