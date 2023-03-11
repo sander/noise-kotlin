@@ -81,7 +81,8 @@ class HandshakeTest {
         val alice02 = alice01.state<Handshake>()?.readMessage(bob02.result)!!
         assert(String(alice02.result.data.value) == string02)
 
-        val bob03 = bob02.state<Transport>()!!.responderCipherState.encrypt(Data.empty, string03.toPayload().plainText)
+        val bob03 =
+            bob02.state<Transport>()!!.responderCipherState.encrypt(Data.empty, Plaintext(string03.toPayload().data))
         val alice03 = alice02.state<Transport>()!!.responderCipherState.decrypt(Data.empty, bob03.result)!!
         assert(String(alice03.result.data.value) == string03)
 
