@@ -30,7 +30,7 @@ data class Handshake(
         val state = messagePatterns.first().fold(init) { state, token ->
             fun mixKey(local: Pair<PublicKey, PrivateKey>?, remote: PublicKey?) = when {
                 local == null || remote == null -> null
-                else -> state?.run { s -> s.mixKey(cryptography.agree(local.second, remote).inputKeyMaterial) }
+                else -> state?.run { s -> s.mixKey(cryptography.agree(local.second, remote)) }
             }
             when {
                 state == null -> null
@@ -80,7 +80,7 @@ data class Handshake(
         val state = messagePatterns.first().fold(init) { state, token ->
             fun mixKey(local: Pair<PublicKey, PrivateKey>?, remote: PublicKey?) = when {
                 local == null || remote == null -> null
-                else -> state?.run { s -> s.mixKey(cryptography.agree(local.second, remote).inputKeyMaterial) }
+                else -> state?.run { s -> s.mixKey(cryptography.agree(local.second, remote)) }
             }
             println("State $state")
             println("Token $token")

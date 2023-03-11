@@ -7,8 +7,6 @@ value class SharedSecret(val data: Data) {
         data.require(SIZE)
     }
 
-    val inputKeyMaterial get() = InputKeyMaterial(data)
-
     companion object {
 
         val SIZE = Size(32)

@@ -8,10 +8,23 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
     @JvmInline
     value class HandshakeHash(val digest: Digest)
 
+    @JvmInline
+    internal value class InputKeyMaterial(val data: Data) {
+
+        init {
+            require(data.isEmpty || data.size == DEFAULT_SIZE || data.size == SharedSecret.SIZE)
+        }
+
+        companion object {
+
+            val DEFAULT_SIZE = Size(32)
+        }
+    }
+
     val cryptography get() = cipher.cryptography
 
-    fun mixKey(inputKeyMaterial: InputKeyMaterial) = let {
-        val (chainingKey, cipherKey) = deriveKeys(cryptography, key, inputKeyMaterial)
+    fun mixKey(inputKeyMaterial: SharedSecret) = let {
+        val (chainingKey, cipherKey) = deriveKeys(cryptography, key, InputKeyMaterial(inputKeyMaterial.data))
         copy(
             cipher = Cipher(cryptography = cryptography, key = CipherKey(cipherKey.data)),
             key = ChainingKey(chainingKey)
