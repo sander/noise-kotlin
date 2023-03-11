@@ -113,36 +113,33 @@ data class Handshake(
             pattern: Pattern,
             role: Role,
             prologue: Data,
-            s: Pair<PublicKey, PrivateKey>? = null,
-            e: Pair<PublicKey, PrivateKey>? = null,
-            rs: PublicKey? = null,
-            re: PublicKey? = null,
+            localStaticKeyPair: Pair<PublicKey, PrivateKey>? = null,
+            localEphemeralKeyPair: Pair<PublicKey, PrivateKey>? = null,
+            remoteStaticKey: PublicKey? = null,
             trustedStaticKeys: Set<PublicKey> = emptySet()
-        ): Handshake? {
-            var state = Symmetry.initialize(cryptography, pattern.name).mixHash(prologue)
-            if (pattern.preSharedMessagePatterns.isNotEmpty()) {
-                for (p in pattern.preSharedMessagePatterns[0]) {
-                    if (p == S && role == INITIATOR && s != null) {
-                        state = state.mixHash(s.first.data)
-                    } else if (p == S && role == RESPONDER && rs != null) {
-                        state = state.mixHash(rs.data)
-                    } else {
-                        return null
-                    }
+        ): Handshake? = pattern.preSharedMessagePatterns.foldIndexed(
+            Symmetry.initialize(cryptography, pattern.name).mixHash(prologue) as Symmetry?
+        ) { index, state, p ->
+            p.fold(state) { s, t ->
+                when {
+                    index == 0 && t == S && role == INITIATOR -> localStaticKeyPair?.let { s?.mixHash(it.first.data) }
+                    index == 0 && t == S && role == RESPONDER -> remoteStaticKey?.let { s?.mixHash(it.data) }
+                    index == 1 && t == S && role == RESPONDER -> localStaticKeyPair?.let { s?.mixHash(it.first.data) }
+                    index == 1 && t == S && role == INITIATOR -> remoteStaticKey?.let { s?.mixHash(it.data) }
+                    else -> null
                 }
             }
-            if (pattern.preSharedMessagePatterns.size == 2) {
-                for (p in pattern.preSharedMessagePatterns[1]) {
-                    if (p == S && role == RESPONDER && s != null) {
-                        state = state.mixHash(s.first.data)
-                    } else if (p == S && role == INITIATOR && rs != null) {
-                        state = state.mixHash(rs.data)
-                    } else {
-                        return null
-                    }
-                }
-            }
-            return Handshake(role, state, pattern.messagePatterns, s, e, rs, re, trustedStaticKeys)
+        }?.let {
+            Handshake(
+                role,
+                it,
+                pattern.messagePatterns,
+                localStaticKeyPair,
+                localEphemeralKeyPair,
+                remoteStaticKey,
+                null,
+                trustedStaticKeys
+            )
         }
 
         val Noise_XN_25519_ChaChaPoly_SHA256 =

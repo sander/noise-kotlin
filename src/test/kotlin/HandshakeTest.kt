@@ -19,15 +19,15 @@ class HandshakeTest {
             pattern,
             Role.INITIATOR,
             prologue,
-            e = JavaCryptography.generateKeyPair(),
-            s = aliceStaticKey
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
+            localStaticKeyPair = aliceStaticKey
         )!!
         val bob00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.RESPONDER,
             prologue,
-            e = JavaCryptography.generateKeyPair(),
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
             trustedStaticKeys = setOf(aliceStaticKey.first)
         )!!
 
@@ -60,16 +60,16 @@ class HandshakeTest {
             pattern,
             Role.INITIATOR,
             prologue,
-            e = JavaCryptography.generateKeyPair(),
-            rs = bobStaticKey.first,
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
+            remoteStaticKey = bobStaticKey.first,
         )!!
         val bob00 = Handshake.initialize(
             JavaCryptography,
             pattern,
             Role.RESPONDER,
             prologue,
-            e = JavaCryptography.generateKeyPair(),
-            s = bobStaticKey
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
+            localStaticKeyPair = bobStaticKey
         )!!
 
         val string01 = "Hello"
