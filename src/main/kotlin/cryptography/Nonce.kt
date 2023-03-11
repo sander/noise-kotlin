@@ -1,6 +1,7 @@
-package nl.sanderdijkhuis.noise
+package nl.sanderdijkhuis.noise.cryptography
 
-import nl.sanderdijkhuis.noise.Size.Companion.valueSize
+import nl.sanderdijkhuis.noise.data.Data
+import nl.sanderdijkhuis.noise.data.Size
 
 @JvmInline
 value class Nonce(val value: ULong) {
@@ -15,8 +16,8 @@ value class Nonce(val value: ULong) {
 
         val zero get() = Nonce(0uL)
 
-        fun from(byteArray: ByteArray): Nonce? =
-            if (byteArray.valueSize > SIZE) null
-            else Nonce(byteArray.mapIndexed { i, b -> (i * b).toULong() }.sum())
+        fun from(data: Data): Nonce? =
+            if (data.size > SIZE) null
+            else Nonce(data.value.mapIndexed { i, b -> (i * b).toULong() }.sum())
     }
 }

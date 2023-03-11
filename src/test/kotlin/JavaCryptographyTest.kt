@@ -1,6 +1,8 @@
 package nl.sanderdijkhuis.noise
 
 import nl.sanderdijkhuis.noise.JavaCryptography.public
+import nl.sanderdijkhuis.noise.cryptography.*
+import nl.sanderdijkhuis.noise.data.Data
 import org.junit.jupiter.api.Test
 
 class JavaCryptographyTest {
@@ -18,9 +20,9 @@ class JavaCryptographyTest {
     @Test
     fun testEncryption() {
         val key = CipherKey(Data(CipherKey.SIZE.byteArray { 0x12 }))
-        val nonce = Nonce.from(Nonce.SIZE.byteArray { 0x34 })!!
+        val nonce = Nonce.from(Data(Nonce.SIZE.byteArray { 0x34 }))!!
         val plaintext = Plaintext(Data("hello".encodeToByteArray()))
-        val associatedData = Data("world".encodeToByteArray())
+        val associatedData = AssociatedData(Data("world".encodeToByteArray()))
         val ciphertext = JavaCryptography.encrypt(key, nonce, associatedData, plaintext)
         val decrypted = JavaCryptography.decrypt(key, nonce, associatedData, ciphertext)
         assert(plaintext.data == decrypted?.data)

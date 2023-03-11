@@ -1,5 +1,9 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.cryptography.*
+import nl.sanderdijkhuis.noise.data.Data
+import nl.sanderdijkhuis.noise.data.State
+
 data class Handshake(
     val role: Role,
     val symmetry: Symmetry,
@@ -17,10 +21,14 @@ data class Handshake(
         val messagePatterns: List<List<Token>>
     )
 
+    enum class Token {
+        E, S, EE, ES, SE, SS
+    }
+
     private val cryptography get() = symmetry.cryptography
 
     private fun State<Handshake, Data>.run(
-        d: Data = Data.empty,
+        d: Data = nl.sanderdijkhuis.noise.data.Data.empty,
         f: (Symmetry) -> Symmetry
     ) =
         copy(value = value.copy(symmetry = f(value.symmetry)), result = result + d)

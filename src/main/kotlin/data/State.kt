@@ -1,4 +1,4 @@
-package nl.sanderdijkhuis.noise
+package nl.sanderdijkhuis.noise.data
 
 data class State<S, A>(val value: S, val result: A) {
 

@@ -1,5 +1,8 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.cryptography.AssociatedData
+import nl.sanderdijkhuis.noise.cryptography.Plaintext
+import nl.sanderdijkhuis.noise.data.Data
 import org.junit.jupiter.api.Test
 
 class HandshakeTest {
@@ -82,8 +85,12 @@ class HandshakeTest {
         assert(String(alice02.result.data.value) == string02)
 
         val bob03 =
-            bob02.state<Transport>()!!.responderCipherState.encrypt(Data.empty, Plaintext(string03.toPayload().data))
-        val alice03 = alice02.state<Transport>()!!.responderCipherState.decrypt(Data.empty, bob03.result)!!
+            bob02.state<Transport>()!!.responderCipherState.encrypt(
+                AssociatedData(Data.empty),
+                Plaintext(string03.toPayload().data)
+            )
+        val alice03 =
+            alice02.state<Transport>()!!.responderCipherState.decrypt(AssociatedData(Data.empty), bob03.result)!!
         assert(String(alice03.result.data.value) == string03)
 
         println(alice02)

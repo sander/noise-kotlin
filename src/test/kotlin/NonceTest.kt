@@ -1,5 +1,7 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.cryptography.Nonce
+import nl.sanderdijkhuis.noise.data.Data
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.test.Test
@@ -11,7 +13,7 @@ class NonceTest {
 
     @Test
     fun testSize() {
-        assertNull(Nonce.from(ByteArray(Nonce.SIZE.value + 1)))
+        assertNull(Nonce.from(Data(ByteArray(Nonce.SIZE.value + 1))))
     }
 
     @Test

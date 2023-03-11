@@ -1,17 +1,16 @@
-package nl.sanderdijkhuis.noise
+package nl.sanderdijkhuis.noise.data
 
-import nl.sanderdijkhuis.noise.Size.Companion.valueSize
 import kotlin.experimental.xor
 
 data class Data(val value: ByteArray) {
 
     init {
-        require(value.valueSize <= Size.MAX_MESSAGE)
+        require(value.size <= Size.MAX_MESSAGE.value)
     }
 
     operator fun plus(that: Data) = Data(this.value + that.value)
 
-    val size get() = value.valueSize
+    val size get() = Size(value.size)
 
     val isEmpty get() = value.isEmpty()
 

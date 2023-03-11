@@ -1,4 +1,4 @@
-package nl.sanderdijkhuis.noise
+package nl.sanderdijkhuis.noise.data
 
 @JvmInline
 value class Size(val value: Int) {
@@ -8,7 +8,7 @@ value class Size(val value: Int) {
     init {
         println("Initializing Size with $value")
         require(value >= 0) { "Size too small" }
-        require(value <= MAX_MESSAGE_LENGTH) { "Size too large (maximum is ${MAX_MESSAGE_LENGTH})" }
+        require(value <= MAX_MESSAGE_LENGTH) { "Size too large (maximum is $MAX_MESSAGE_LENGTH)" }
     }
 
     fun byteArray(f: (Int) -> Byte) = ByteArray(value, f)
@@ -18,7 +18,5 @@ value class Size(val value: Int) {
         private const val MAX_MESSAGE_LENGTH = 65535
 
         val MAX_MESSAGE = Size(MAX_MESSAGE_LENGTH)
-
-        val ByteArray.valueSize get() = Size(size)
     }
 }

@@ -1,5 +1,10 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.cryptography.*
+import nl.sanderdijkhuis.noise.data.Data
+import nl.sanderdijkhuis.noise.data.Size
+import nl.sanderdijkhuis.noise.data.State
+
 data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash: HandshakeHash) {
 
     @JvmInline
@@ -39,14 +44,14 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
 
     fun encryptAndHash(plaintext: Plaintext) = let {
         println("Encrypting and hashing $handshakeHash $plaintext")
-        cipher.encrypt(handshakeHash.digest.data, plaintext).let {
+        cipher.encrypt(AssociatedData(handshakeHash.digest.data), plaintext).let {
             State(copy(cipher = it.value).mixHash(it.result.data), it.result)
         }
     }
 
     fun decryptAndHash(ciphertext: Ciphertext) = let {
         println("Decrypting and hashing $handshakeHash $ciphertext")
-        cipher.decrypt(handshakeHash.digest.data, ciphertext)?.let {
+        cipher.decrypt(AssociatedData(handshakeHash.digest.data), ciphertext)?.let {
             State(copy(cipher = it.value).mixHash(ciphertext.data), it.result)
         }
     }

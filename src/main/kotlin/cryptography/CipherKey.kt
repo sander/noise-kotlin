@@ -1,4 +1,7 @@
-package nl.sanderdijkhuis.noise
+package nl.sanderdijkhuis.noise.cryptography
+
+import nl.sanderdijkhuis.noise.data.Data
+import nl.sanderdijkhuis.noise.data.Size
 
 @JvmInline
 value class CipherKey(val data: Data) {

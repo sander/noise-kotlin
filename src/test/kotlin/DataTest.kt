@@ -1,5 +1,7 @@
 package nl.sanderdijkhuis.noise
 
+import nl.sanderdijkhuis.noise.data.Data
+import nl.sanderdijkhuis.noise.data.Size
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
