@@ -9,7 +9,7 @@ sealed interface MessageResult<T> {
     data class FinalHandshakeMessage<T>(
         val initiatorCipherState: CipherState,
         val responderCipherState: CipherState,
-        val handshakeHash: HandshakeHash,
+        val handshakeHash: Digest,
         val result: T
     ) : MessageResult<T>
 }

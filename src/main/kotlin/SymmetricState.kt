@@ -5,6 +5,9 @@ data class SymmetricState(val cipherState: CipherState, val key: ChainingKey, va
     @JvmInline
     value class ChainingKey(val digest: Digest)
 
+    @JvmInline
+    value class HandshakeHash(val digest: Digest)
+
     val cryptography get() = cipherState.cryptography
 
     fun mixKey(inputKeyMaterial: InputKeyMaterial) = let {

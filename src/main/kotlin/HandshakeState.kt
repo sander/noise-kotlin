@@ -57,7 +57,7 @@ data class HandshakeState(
                     MessageResult.FinalHandshakeMessage(
                         it.first,
                         it.second,
-                        symmetricState.handshakeHash,
+                        symmetricState.handshakeHash.digest,
                         state.result
                     )
                 }
@@ -157,7 +157,7 @@ data class HandshakeState(
                     MessageResult.FinalHandshakeMessage(
                         it.first,
                         it.second,
-                        symmetricState.handshakeHash,
+                        symmetricState.handshakeHash.digest,
                         state.result
                     )
                 }
