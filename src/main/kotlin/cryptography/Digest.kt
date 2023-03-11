@@ -12,6 +12,6 @@ value class Digest(val data: Data) {
 
     companion object {
 
-        val SIZE = Size(32)
+        val SIZE = Size(32u)
     }
 }

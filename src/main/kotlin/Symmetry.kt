@@ -22,7 +22,7 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
 
         companion object {
 
-            val DEFAULT_SIZE = Size(32)
+            val DEFAULT_SIZE = Size(32u)
         }
     }
 
@@ -77,12 +77,12 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
             Symmetry(state, ck, HandshakeHash(h))
         }
 
-        private val BLOCK_SIZE = Size(64)
+        private val BLOCK_SIZE = Size(64u)
 
         /** https://www.ietf.org/rfc/rfc2104.txt */
         private fun authenticateMessage(cryptography: Cryptography, key: Digest, data: Data) = let {
 
-            fun block(init: (Int) -> Byte) = Data(ByteArray(BLOCK_SIZE.value, init))
+            fun block(init: (Int) -> Byte) = Data(ByteArray(BLOCK_SIZE.integerValue, init))
 
             val keyData =
                 if (key.data.size <= BLOCK_SIZE)

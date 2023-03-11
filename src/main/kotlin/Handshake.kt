@@ -106,7 +106,7 @@ data class Handshake(
                                     state.result.value.sliceArray(
                                         IntRange(
                                             0,
-                                            SharedSecret.SIZE.value - 1
+                                            SharedSecret.SIZE.value.toInt() - 1
                                         )
                                     )
                                 )
@@ -115,13 +115,13 @@ data class Handshake(
                         val mixed = state.value.symmetry.mixHash(re.data)
                         state.copy(
                             value = state.value.copy(symmetry = mixed, remoteEphemeralKey = re),
-                            result = Data(state.result.value.drop(SharedSecret.SIZE.value).toByteArray())
+                            result = Data(state.result.value.drop(SharedSecret.SIZE.integerValue).toByteArray())
                         )
                     }
 
                 token == Token.S && state.value.remoteStaticKey == null -> let {
                     println("S")
-                    val splitAt = SharedSecret.SIZE.value + 16
+                    val splitAt = SharedSecret.SIZE.value.toInt() + 16
                     val temp =
                         state.result.value.sliceArray(IntRange(0, splitAt - 1))
                     state.value.symmetry.decryptAndHash(Ciphertext(Data(temp)))?.let {

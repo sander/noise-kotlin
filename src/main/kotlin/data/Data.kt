@@ -5,12 +5,12 @@ import kotlin.experimental.xor
 data class Data(val value: ByteArray) {
 
     init {
-        require(value.size <= Size.MAX_MESSAGE.value)
+        require(value.size <= Size.MAX_MESSAGE.integerValue)
     }
 
     operator fun plus(that: Data) = Data(this.value + that.value)
 
-    val size get() = Size(value.size)
+    val size get() = Size(value.size.toUShort())
 
     val isEmpty get() = value.isEmpty()
 

@@ -12,7 +12,7 @@ value class Nonce(val value: ULong) {
 
     companion object {
 
-        val SIZE = Size(8)
+        val SIZE = Size(8u)
 
         val zero get() = Nonce(0uL)
 

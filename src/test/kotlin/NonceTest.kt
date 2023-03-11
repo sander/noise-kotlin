@@ -13,7 +13,7 @@ class NonceTest {
 
     @Test
     fun testSize() {
-        assertNull(Nonce.from(Data(ByteArray(Nonce.SIZE.value + 1))))
+        assertNull(Nonce.from(Data(ByteArray(Nonce.SIZE.integerValue + 1))))
     }
 
     @Test
@@ -29,7 +29,7 @@ class NonceTest {
         assertEquals(ULong.MIN_VALUE.toLong(), 0L)
         fun test(x: ULong) = assertContentEquals(
             Nonce(x).bytes,
-            ByteBuffer.allocate(Nonce.SIZE.value).order(ByteOrder.LITTLE_ENDIAN).putLong(x.toLong()).array()
+            ByteBuffer.allocate(Nonce.SIZE.integerValue).order(ByteOrder.LITTLE_ENDIAN).putLong(x.toLong()).array()
         )
         test(1uL)
         test(255uL)

@@ -13,9 +13,9 @@ class DataTest {
     @Test
     fun testSize() {
         assertDoesNotThrow { Data(ByteArray(0)) }
-        assertDoesNotThrow { Data(ByteArray(Size.MAX_MESSAGE.value)) }
-        assertDoesNotThrow { Data(ByteArray(Size.MAX_MESSAGE.value - 1)) }
-        assertThrows<IllegalArgumentException> { Data(ByteArray(Size.MAX_MESSAGE.value + 1)) }
+        assertDoesNotThrow { Data(ByteArray(Size.MAX_MESSAGE.integerValue)) }
+        assertDoesNotThrow { Data(ByteArray(Size.MAX_MESSAGE.integerValue - 1)) }
+        assertThrows<IllegalArgumentException> { Data(ByteArray(Size.MAX_MESSAGE.integerValue + 1)) }
     }
 
     @Test
