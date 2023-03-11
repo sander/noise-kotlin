@@ -48,12 +48,12 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
 
     companion object {
 
-        fun initialize(cryptography: Cryptography, protocolName: ProtocolName) = let {
-            println("Initializing $cryptography $protocolName ${protocolName.data.size} ${Digest.SIZE}")
-            val h = if (protocolName.data.size <= Digest.SIZE)
-                Digest(Data(Digest.SIZE.byteArray { protocolName.data.value.getOrElse(it) { 0x00 } }))
+        fun initialize(cryptography: Cryptography, protocolName: String) = let {
+            val name = Data(protocolName.toByteArray())
+            val h = if (name.size <= Digest.SIZE)
+                Digest(Data(Digest.SIZE.byteArray { name.value.getOrElse(it) { 0x00 } }))
             else
-                cryptography.hash(protocolName.data)
+                cryptography.hash(name)
             val ck = ChainingKey(h)
             val state = Cipher(cryptography)
             Symmetry(state, ck, HandshakeHash(h))
