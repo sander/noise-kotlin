@@ -36,25 +36,18 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
         )
     }
 
-    fun mixHash(data: Data) = let {
-        val result = copy(handshakeHash = HandshakeHash(cryptography.hash(handshakeHash.digest.data + data)))
-        println("Mixing $handshakeHash + $data = ${result.handshakeHash}")
-        result
-    }
+    fun mixHash(data: Data) =
+        copy(handshakeHash = HandshakeHash(cryptography.hash(handshakeHash.digest.data + data)))
 
-    fun encryptAndHash(plaintext: Plaintext) = let {
-        println("Encrypting and hashing $handshakeHash $plaintext")
+    fun encryptAndHash(plaintext: Plaintext) =
         cipher.encrypt(AssociatedData(handshakeHash.digest.data), plaintext).let {
             State(copy(cipher = it.value).mixHash(it.result.data), it.result)
         }
-    }
 
-    fun decryptAndHash(ciphertext: Ciphertext) = let {
-        println("Decrypting and hashing $handshakeHash $ciphertext")
+    fun decryptAndHash(ciphertext: Ciphertext) =
         cipher.decrypt(AssociatedData(handshakeHash.digest.data), ciphertext)?.let {
             State(copy(cipher = it.value).mixHash(ciphertext.data), it.result)
         }
-    }
 
     fun split() = let {
         val zeroLen = InputKeyMaterial(Data.empty)
