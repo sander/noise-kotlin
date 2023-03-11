@@ -48,7 +48,6 @@ class HandshakeTest {
     }
 
     @Test
-    @Suppress("UNCHECKED_CAST")
     fun testHandshakeNK() {
         val bobStaticKey = JavaCryptography.generateKeyPair()
         val pattern = Handshake.Noise_NK_25519_ChaChaPoly_SHA256
