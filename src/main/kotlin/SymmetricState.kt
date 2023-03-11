@@ -26,14 +26,14 @@ data class SymmetricState(val cipherState: CipherState, val key: ChainingKey, va
 
     fun encryptAndHash(plaintext: Plaintext) = let {
         println("Encrypting and hashing $handshakeHash $plaintext")
-        cipherState.encryptWithAssociatedData(handshakeHash.digest.data, plaintext).let {
+        cipherState.encrypt(handshakeHash.digest.data, plaintext).let {
             State(copy(cipherState = it.current).mixHash(it.result.data), it.result)
         }
     }
 
     fun decryptAndHash(ciphertext: Ciphertext) = let {
         println("Decrypting and hashing $handshakeHash $ciphertext")
-        cipherState.decryptWithAssociatedData(handshakeHash.digest.data, ciphertext)?.let {
+        cipherState.decrypt(handshakeHash.digest.data, ciphertext)?.let {
             State(copy(cipherState = it.current).mixHash(ciphertext.data), it.result)
         }
     }
