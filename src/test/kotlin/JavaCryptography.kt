@@ -35,10 +35,10 @@ object JavaCryptography : Cryptography {
 
     private fun Nonce.toJava() = IvParameterSpec(ByteArray(4) { 0x00 } + value)
 
-    fun generateKeyPair(): KeyPair {
+    fun generateKeyPair(): Pair<PublicKey, PrivateKey> {
         val generator = KeyPairGenerator.getInstance("XDH").apply { initialize(spec) }
         val pair = generator.generateKeyPair()
-        return KeyPair(
+        return Pair(
             PublicKey(Data(pair.public.encoded.sliceArray(IntRange(12, 43)))),
             PrivateKey((pair.private as XECPrivateKey).scalar.get())
         )

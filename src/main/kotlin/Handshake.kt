@@ -4,8 +4,8 @@ data class Handshake(
     val role: Role,
     val symmetry: Symmetry,
     val messagePatterns: List<List<Token>>,
-    val localStaticKeyPair: KeyPair? = null,
-    val localEphemeralKeyPair: KeyPair? = null,
+    val localStaticKeyPair: Pair<PublicKey, PrivateKey>? = null,
+    val localEphemeralKeyPair: Pair<PublicKey, PrivateKey>? = null,
     val remoteStaticKey: PublicKey? = null,
     val remoteEphemeralKey: PublicKey? = null,
     val trustedStaticKeys: Set<PublicKey> = emptySet()
@@ -28,15 +28,20 @@ data class Handshake(
         val init: State<Handshake, Data>? = State(this, Data.empty)
         println("Writing ${messagePatterns.first()}")
         val state = messagePatterns.first().fold(init) { state, token ->
-            fun mixKey(local: KeyPair?, remote: PublicKey?) = when {
+            fun mixKey(local: Pair<PublicKey, PrivateKey>?, remote: PublicKey?) = when {
                 local == null || remote == null -> null
-                else -> state?.run { s -> s.mixKey(cryptography.agree(local.private, remote).inputKeyMaterial) }
+                else -> state?.run { s -> s.mixKey(cryptography.agree(local.second, remote).inputKeyMaterial) }
             }
             when {
                 state == null -> null
-                token == Token.E && localEphemeralKeyPair != null -> state.run(localEphemeralKeyPair.public.data) { it.mixHash(localEphemeralKeyPair.public.data) }
+                token == Token.E && localEphemeralKeyPair != null -> state.run(localEphemeralKeyPair.first.data) {
+                    it.mixHash(
+                        localEphemeralKeyPair.first.data
+                    )
+                }
+
                 token == Token.S && localStaticKeyPair != null -> state.runAndAppendInState {
-                    it.encryptAndHash(localStaticKeyPair.public.plaintext).map { c -> c.data }
+                    it.encryptAndHash(localStaticKeyPair.first.plaintext).map { c -> c.data }
                 }
 
                 token == Token.EE -> mixKey(localEphemeralKeyPair, remoteEphemeralKey)
@@ -73,9 +78,9 @@ data class Handshake(
         println("Reading ${messagePatterns.first()}")
         val init: State<Handshake, Data>? = State(this, message.data)
         val state = messagePatterns.first().fold(init) { state, token ->
-            fun mixKey(local: KeyPair?, remote: PublicKey?) = when {
+            fun mixKey(local: Pair<PublicKey, PrivateKey>?, remote: PublicKey?) = when {
                 local == null || remote == null -> null
-                else -> state?.run { s -> s.mixKey(cryptography.agree(local.private, remote).inputKeyMaterial) }
+                else -> state?.run { s -> s.mixKey(cryptography.agree(local.second, remote).inputKeyMaterial) }
             }
             println("State $state")
             println("Token $token")
@@ -128,14 +133,26 @@ data class Handshake(
                     mixKey(state.value.localEphemeralKeyPair, state.value.remoteEphemeralKey)
                 }
 
-                token == Token.ES && role == Role.INITIATOR -> mixKey(state.value.localEphemeralKeyPair, state.value.remoteStaticKey)
-                token == Token.ES && role == Role.RESPONDER -> mixKey(state.value.localStaticKeyPair, state.value.remoteEphemeralKey)
+                token == Token.ES && role == Role.INITIATOR -> mixKey(
+                    state.value.localEphemeralKeyPair,
+                    state.value.remoteStaticKey
+                )
+
+                token == Token.ES && role == Role.RESPONDER -> mixKey(
+                    state.value.localStaticKeyPair,
+                    state.value.remoteEphemeralKey
+                )
+
                 token == Token.SE && role == Role.INITIATOR -> let {
                     println("SE")
                     mixKey(state.value.localStaticKeyPair, state.value.remoteEphemeralKey)
                 }
 
-                token == Token.SE && role == Role.RESPONDER -> mixKey(state.value.localEphemeralKeyPair, state.value.remoteStaticKey)
+                token == Token.SE && role == Role.RESPONDER -> mixKey(
+                    state.value.localEphemeralKeyPair,
+                    state.value.remoteStaticKey
+                )
+
                 token == Token.SS -> mixKey(state.value.localStaticKeyPair, state.value.remoteStaticKey)
                 else -> null
             }
@@ -173,15 +190,20 @@ data class Handshake(
 
         fun initialize(
             cryptography: Cryptography,
-            pattern: HandshakePattern, role: Role, prologue: Prologue,
-            s: KeyPair? = null, e: KeyPair? = null, rs: PublicKey? = null, re: PublicKey? = null,
+            pattern: HandshakePattern,
+            role: Role,
+            prologue: Prologue,
+            s: Pair<PublicKey, PrivateKey>? = null,
+            e: Pair<PublicKey, PrivateKey>? = null,
+            rs: PublicKey? = null,
+            re: PublicKey? = null,
             trustedStaticKeys: Set<PublicKey> = emptySet()
         ): Handshake? {
             var state = Symmetry.initialize(cryptography, pattern.name).mixHash(prologue.data)
             if (pattern.preSharedMessagePatterns.isNotEmpty()) {
                 for (p in pattern.preSharedMessagePatterns[0]) {
                     if (p == Token.S && role == Role.INITIATOR && s != null) {
-                        state = state.mixHash(s.public.data)
+                        state = state.mixHash(s.first.data)
                     } else if (p == Token.S && role == Role.RESPONDER && rs != null) {
                         state = state.mixHash(rs.data)
                     } else {
@@ -192,7 +214,7 @@ data class Handshake(
             if (pattern.preSharedMessagePatterns.size == 2) {
                 for (p in pattern.preSharedMessagePatterns[1]) {
                     if (p == Token.S && role == Role.RESPONDER && s != null) {
-                        state = state.mixHash(s.public.data)
+                        state = state.mixHash(s.first.data)
                     } else if (p == Token.S && role == Role.INITIATOR && rs != null) {
                         state = state.mixHash(rs.data)
                     } else {
