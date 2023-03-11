@@ -4,7 +4,7 @@ package nl.sanderdijkhuis.noise
 value class CipherKey(val data: Data) {
 
     init {
-        require(data.size == SIZE)
+        data.require(SIZE)
     }
 
     companion object {

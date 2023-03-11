@@ -4,7 +4,7 @@ package nl.sanderdijkhuis.noise
 value class SharedSecret(val data: Data) {
 
     init {
-        require(data.size == SIZE)
+        data.require(SIZE)
     }
 
     val inputKeyMaterial get() = InputKeyMaterial(data)

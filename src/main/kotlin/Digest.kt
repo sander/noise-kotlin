@@ -4,7 +4,7 @@ package nl.sanderdijkhuis.noise
 value class Digest(val data: Data) {
 
     init {
-        require(data.size == SIZE)
+        data.require(SIZE)
     }
 
     val messageAuthenticationKey get() = MessageAuthenticationKey(data)

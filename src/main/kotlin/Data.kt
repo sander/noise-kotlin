@@ -20,6 +20,10 @@ data class Data(val value: ByteArray) {
         ByteArray(value.size) { this.value[it].xor(that.value[it]) }
     })
 
+    fun require(requiredSize: Size) {
+        require(size == requiredSize) { "Invalid size, must be ${requiredSize.value}" }
+    }
+
     override fun equals(other: Any?) =
         this === other || ((other as? Data)?.let { value.contentEquals(it.value) } ?: false)
 

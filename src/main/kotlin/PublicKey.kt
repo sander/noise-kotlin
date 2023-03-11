@@ -4,7 +4,7 @@ package nl.sanderdijkhuis.noise
 value class PublicKey(val data: Data) {
 
     init {
-        require(data.size == SharedSecret.SIZE)
+        data.require(SharedSecret.SIZE)
     }
 
     val plaintext get() = Plaintext(data)
