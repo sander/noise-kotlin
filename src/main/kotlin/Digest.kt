@@ -7,8 +7,6 @@ value class Digest(val data: Data) {
         data.require(SIZE)
     }
 
-    val messageAuthenticationKey get() = MessageAuthenticationKey(data)
-
     companion object {
 
         val SIZE = Size(32)

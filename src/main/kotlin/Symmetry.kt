@@ -75,7 +75,7 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
         private val BLOCK_SIZE = Size(64)
 
         /** https://www.ietf.org/rfc/rfc2104.txt */
-        private fun authenticateMessage(cryptography: Cryptography, key: MessageAuthenticationKey, data: Data) = let {
+        private fun authenticateMessage(cryptography: Cryptography, key: Digest, data: Data) = let {
 
             fun block(init: (Int) -> Byte) = Data(ByteArray(BLOCK_SIZE.value, init))
 
@@ -90,15 +90,9 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
         }
 
         internal fun deriveKeys(cryptography: Cryptography, key: ChainingKey, material: InputKeyMaterial) = let {
-            val temporaryKey =
-                authenticateMessage(cryptography, key.digest.messageAuthenticationKey, material.data)
-            val output1 =
-                authenticateMessage(cryptography, temporaryKey.messageAuthenticationKey, Data(byteArrayOf(0x01)))
-            val output2 = authenticateMessage(
-                cryptography,
-                temporaryKey.messageAuthenticationKey,
-                output1.data + Data(byteArrayOf(0x02))
-            )
+            val temporaryKey = authenticateMessage(cryptography, key.digest, material.data)
+            val output1 = authenticateMessage(cryptography, temporaryKey, Data(byteArrayOf(0x01)))
+            val output2 = authenticateMessage(cryptography, temporaryKey, output1.data + Data(byteArrayOf(0x02)))
             Pair(output1, output2)
         }
     }
