@@ -7,7 +7,7 @@ data class Cipher(val cryptography: Cryptography, val key: CipherKey? = null, va
             nonce.increment()?.let {
                 State(copy(nonce = it), cryptography.encrypt(k, nonce, associatedData, plaintext))
             }
-        } ?: State(this, plaintext.ciphertext)
+        } ?: State(this, Ciphertext(plaintext.data))
 
     fun decrypt(data: Data, ciphertext: Ciphertext): State<Cipher, Plaintext>? =
         nonce.increment()?.let { n ->

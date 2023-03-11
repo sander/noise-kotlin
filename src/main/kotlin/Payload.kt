@@ -1,6 +1,4 @@
 package nl.sanderdijkhuis.noise
 
-data class Payload(val data: Data) {
-
-    val plainText get() = Plaintext(data)
-}
+@JvmInline
+value class Payload(val data: Data)
