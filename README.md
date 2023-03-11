@@ -2,14 +2,10 @@
 
 **Noise for Kotlin** contains example code for implementing [Noise](https://noiseprotocol.org) protocols based on Diffie-Hellman key agreement. It may evolve into a usable library. [Contact me](mailto:mail@sanderdijkhuis.nl) if you are interested in helping out to realize this.
 
-> **Warning**: Reasons why you **may not** use any of this code in production yet:
+> **Warning**: Some reasons why you **may not** use any of this code in production yet:
 >
-> - It has not yet been reviewed for compliance to the spec.
-> - It has not yet been tested together with other Noise implementations.
 > - It has not yet been reviewed for secure engineering practices.
-> - It probably contains some major gaps, making it as leaky as a basket.
 > - It leaves your secrets on the heap, up for grabs.
-> - It even logs some of them.
 
 ## How to build
 
