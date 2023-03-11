@@ -9,7 +9,7 @@ class HandshakeTest {
     @Test
     fun testHandshakeXN() {
         val aliceStaticKey = JavaCryptography.generateKeyPair()
-        val pattern = HandshakePattern.Noise_XN_25519_ChaChaPoly_SHA256
+        val pattern = Handshake.Noise_XN_25519_ChaChaPoly_SHA256
         val prologue = Data.empty
         val alice00 = Handshake.initialize(
             JavaCryptography,
@@ -51,7 +51,7 @@ class HandshakeTest {
     @Suppress("UNCHECKED_CAST")
     fun testHandshakeNK() {
         val bobStaticKey = JavaCryptography.generateKeyPair()
-        val pattern = HandshakePattern.Noise_NK_25519_ChaChaPoly_SHA256
+        val pattern = Handshake.Noise_NK_25519_ChaChaPoly_SHA256
         val prologue = Data.empty
         val alice00 = Handshake.initialize(
             JavaCryptography,

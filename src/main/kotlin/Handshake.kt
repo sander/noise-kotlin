@@ -11,6 +11,12 @@ data class Handshake(
     val trustedStaticKeys: Set<PublicKey> = emptySet()
 ) : MessageType {
 
+    data class Pattern(
+        val name: String,
+        val preSharedMessagePatterns: List<List<Token>>,
+        val messagePatterns: List<List<Token>>
+    )
+
     private val cryptography get() = symmetry.cryptography
 
     private fun State<Handshake, Data>.run(
@@ -191,7 +197,7 @@ data class Handshake(
 
         fun initialize(
             cryptography: Cryptography,
-            pattern: HandshakePattern,
+            pattern: Pattern,
             role: Role,
             prologue: Data,
             s: Pair<PublicKey, PrivateKey>? = null,
@@ -225,5 +231,19 @@ data class Handshake(
             }
             return Handshake(role, state, pattern.messagePatterns, s, e, rs, re, trustedStaticKeys)
         }
+
+        val Noise_XN_25519_ChaChaPoly_SHA256 =
+            Pattern(
+                "Noise_XN_25519_ChaChaPoly_SHA256",
+                listOf(),
+                listOf(listOf(Token.E), listOf(Token.E, Token.EE), listOf(Token.S, Token.SE))
+            )
+
+        val Noise_NK_25519_ChaChaPoly_SHA256 =
+            Pattern(
+                "Noise_NK_25519_ChaChaPoly_SHA256",
+                listOf(listOf(), listOf(Token.S)),
+                listOf(listOf(Token.E, Token.ES), listOf(Token.E, Token.EE))
+            )
     }
 }
