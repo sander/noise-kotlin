@@ -4,10 +4,11 @@ plugins {
     kotlin("jvm") version "1.8.10"
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
     kotlin("plugin.serialization") version "1.8.10"
+    `maven-publish`
 }
 
 group = "nl.sanderdijkhuis"
-version = "0.1.0-SNAPSHOT"
+version = "0.4.0"
 
 repositories {
     mavenCentral()
@@ -39,6 +40,14 @@ koverReport {
                 metric = kotlinx.kover.gradle.plugin.dsl.MetricType.BRANCH
                 minValue = 55
             }
+        }
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
         }
     }
 }
