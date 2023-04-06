@@ -28,7 +28,7 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.allWarningsAsErrors = true
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = "1.8"
 }
 
 koverReport {
