@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
     kotlin("plugin.serialization") version "1.8.10"
     `maven-publish`
+    signing
 }
 
 group = "nl.sanderdijkhuis"
@@ -17,6 +18,11 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 kotlin {
@@ -47,7 +53,36 @@ koverReport {
 publishing {
     publications {
         create<MavenPublication>("maven") {
+            artifactId = "noise-kotlin"
             from(components["java"])
+            pom {
+                name.set("Noise for Kotlin")
+                description.set("Noise protocols based on Diffie-Hellman key agreement")
+                url.set("https://github.com/sander/noise-kotlin")
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://github.com/sander/noise-kotlin/blob/main/LICENSE.md")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/sander/noise-kotlin.git")
+                    developerConnection.set("scm:git:ssh://github.com/sander/noise-kotlin.git")
+                    url.set("http://github.com/sander/noise-kotlin")
+                }
+            }
         }
     }
+    repositories {
+        maven {
+            val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+            credentials(PasswordCredentials::class.java)
+        }
+    }
+}
+
+signing {
+    sign(publishing.publications["maven"])
 }
