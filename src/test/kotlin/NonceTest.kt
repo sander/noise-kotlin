@@ -4,6 +4,8 @@ import nl.sanderdijkhuis.noise.cryptography.Nonce
 import nl.sanderdijkhuis.noise.data.Data
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.security.SecureRandom
+import kotlin.random.asKotlinRandom
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -23,7 +25,7 @@ class NonceTest {
     }
 
     @Test
-    fun testLittleEndian() {
+    fun testEncodeLittleEndian() {
         assertEquals((0uL).toLong(), 0L)
         assertEquals(ULong.MAX_VALUE.toLong(), -1L)
         assertEquals(ULong.MIN_VALUE.toLong(), 0L)
@@ -34,7 +36,16 @@ class NonceTest {
         test(1uL)
         test(255uL)
         test(256uL)
+        test(999uL)
         test(ULong.MAX_VALUE)
         assertContentEquals(Nonce(ULong.MAX_VALUE).bytes, Nonce.SIZE.byteArray { (0xff).toByte() })
+    }
+
+    @Test
+    fun testDecodeLittleEndian() {
+        val random = SecureRandom().asKotlinRandom().nextBytes(Nonce.SIZE.integerValue)
+        println(random.toList())
+        val nonce = Nonce.from(Data(random))!!
+        assertContentEquals(random, nonce.bytes)
     }
 }

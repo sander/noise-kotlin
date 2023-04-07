@@ -18,6 +18,6 @@ value class Nonce(val value: ULong) {
 
         fun from(data: Data): Nonce? =
             if (data.size > SIZE) null
-            else Nonce(data.value.mapIndexed { i, b -> (i * b).toULong() }.sum())
+            else Nonce(data.value.foldRight(0uL) { b, r -> (r shl 8) + b.toUByte() })
     }
 }
