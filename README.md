@@ -1,5 +1,7 @@
 # Noise for Kotlin
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.sanderdijkhuis/noise-kotlin/badge.svg?style=flat-square&gav=true)](https://maven-badges.herokuapp.com/maven-central/nl.sanderdijkhuis/noise-kotlin)
+
 **Noise for Kotlin** contains example code for implementing [Noise](https://noiseprotocol.org) protocols based on Diffie-Hellman key agreement. It may evolve into a usable library. [Contact me](mailto:mail@sanderdijkhuis.nl) if you are interested in helping out to realize this.
 
 > **Warning**: Some reasons why you **may not** use any of this code in production yet:
@@ -23,28 +25,9 @@ Instead of `test`, use `jar` to create a JAR in `build/distributions`.
 
 ## How to use in a prototype
 
-Assuming you build your prototype using [Gradle](https://gradle.org), add to `settings.gradle.kts`:
+Add the [`noise-kotlin` dependency](https://central.sonatype.com/artifact/nl.sanderdijkhuis/noise-kotlin) to your project.
 
-```kotlin
-sourceControl {
-    gitRepository(uri("https://github.com/sander/noise-kotlin.git")) {
-        producesModule("nl.sanderdijkhuis:noise-kotlin")
-    }
-}
-```
-
-Then, pick any [release](https://github.com/sander/noise-kotlin/releases) you like, such as `v0.1.0`, and add to `build.gradle.kts`:
-
-```kotlin
-dependencies {
-
-    // -%<- other dependencies -%<-
-
-    implementation("nl.sanderdijkhuis:noise-kotlin:v0.1.0")
-}
-```
-
-Then, implement [`Cryptography`](src/main/kotlin/Cryptography.kt) for your platform and `initialize` a [`HandshakeState`](src/main/kotlin/HandshakeState.kt).
+Then, implement [`Cryptography`](src/main/kotlin/Cryptography.kt) for your platform and `initialize` a [`Handshake`](src/main/kotlin/Handshake.kt).
 
 ## Design decisions
 
