@@ -68,7 +68,14 @@ publishing {
                 scm {
                     connection.set("scm:git:git://github.com/sander/noise-kotlin.git")
                     developerConnection.set("scm:git:ssh://github.com/sander/noise-kotlin.git")
-                    url.set("http://github.com/sander/noise-kotlin")
+                    url.set("https://github.com/sander/noise-kotlin")
+                }
+                developers {
+                    developer {
+                        id.set("sander")
+                        name.set("Sander Dijkhuis")
+                        email.set("mail@sanderdijkhuis.nl")
+                    }
                 }
             }
         }
