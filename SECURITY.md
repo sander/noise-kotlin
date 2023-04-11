@@ -4,7 +4,7 @@
 
 ## Supported versions
 
-Currently only snapshot versions are available. Any vulnerability should be mitigated in a next snapshot version.
+Currently only pre-release and snapshot versions are available. Any vulnerability should be mitigated in a next pre-release version.
 
 ## Reporting a vulnerability
 
