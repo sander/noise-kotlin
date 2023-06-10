@@ -39,12 +39,14 @@ tasks.withType<KotlinCompile> {
 }
 
 koverReport {
-    verify {
-        onCheck = true
-        rule {
-            bound {
-                metric = kotlinx.kover.gradle.plugin.dsl.MetricType.BRANCH
-                minValue = 55
+    defaults {
+        verify {
+            onCheck = true
+            rule {
+                bound {
+                    metric = kotlinx.kover.gradle.plugin.dsl.MetricType.BRANCH
+                    minValue = 55
+                }
             }
         }
     }
