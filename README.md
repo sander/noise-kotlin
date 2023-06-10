@@ -27,7 +27,7 @@ Instead of `test`, use `jar` to create a JAR in `build/distributions`.
 
 Add the [`noise-kotlin` dependency](https://central.sonatype.com/artifact/nl.sanderdijkhuis/noise-kotlin) to your project.
 
-Then, implement [`Cryptography`](src/main/kotlin/Cryptography.kt) for your platform and `initialize` a [`Handshake`](src/main/kotlin/Handshake.kt).
+Then, implement [`Cryptography`](src/main/kotlin/cryptography/Cryptography.kt) for your platform and `initialize` a [`Handshake`](src/main/kotlin/Handshake.kt).
 
 ## Design decisions
 
