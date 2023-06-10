@@ -95,4 +95,33 @@ class HandshakeTest {
 
         println(alice02)
     }
+
+    /** https://github.com/sander/noise-kotlin/discussions/15 */
+    @Test
+    fun testFinalHandshakeHash() {
+        val aliceStaticKey = JavaCryptography.generateKeyPair()
+        val alice00 = Handshake.initialize(
+            JavaCryptography,
+            Handshake.Noise_XN_25519_ChaChaPoly_SHA256,
+            Role.INITIATOR,
+            Data.empty,
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
+            localStaticKeyPair = aliceStaticKey
+        )!!
+        val bob00 = Handshake.initialize(
+            JavaCryptography,
+            Handshake.Noise_XN_25519_ChaChaPoly_SHA256,
+            Role.RESPONDER,
+            Data.empty,
+            localEphemeralKeyPair = JavaCryptography.generateKeyPair(),
+            trustedStaticKeys = setOf(aliceStaticKey.first)
+        )!!
+        val alice01 = alice00.writeMessage("hello".toPayload())!!
+        val bob01 = bob00.readMessage(alice01.result)!!
+        val bob02 = bob01.state<Handshake>()?.writeMessage("hi".toPayload())!!
+        val alice02 = alice01.state<Handshake>()?.readMessage(bob02.result)!!
+        val alice03 = alice02.state<Handshake>()?.writeMessage("bye".toPayload())!!
+        val bob03 = bob02.state<Handshake>()?.readMessage(alice03.result)!!
+        assert((alice03.value as Transport).handshakeHash == (bob03.value as Transport).handshakeHash)
+    }
 }

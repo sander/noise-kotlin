@@ -102,7 +102,7 @@ data class Handshake(
         }?.let { s ->
             val rest = messagePatterns.drop(1)
             if (rest.isEmpty()) s.value.symmetry.split()
-                .let { State(Transport(it.first, it.second, symmetry.handshakeHash.digest), s.result) }
+                .let { State(Transport(it.first, it.second, s.value.symmetry.handshakeHash.digest), s.result) }
             else State(s.value.copy(messagePatterns = rest), s.result)
         }
 
