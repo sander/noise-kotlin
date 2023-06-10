@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 }
 
 java {
