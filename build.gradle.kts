@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.8.21"
-    id("org.jetbrains.kotlinx.kover") version "0.7.0-Alpha"
+    id("org.jetbrains.kotlinx.kover") version "0.7.1"
     kotlin("plugin.serialization") version "1.8.21"
     `maven-publish`
     signing
