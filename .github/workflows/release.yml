@@ -27,4 +27,6 @@ jobs:
           echo "signing.keyId=${{ vars.OSSRH_GPG_KEY_ID }}" >> ~/.gradle/gradle.properties
           echo "signing.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}" >> ~/.gradle/gradle.properties
           echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> ~/.gradle/gradle.properties
+      - run: cat ~/.gradle/gradle.properties
+      - run: ls -l ~/.gnupg
       - run: ./gradlew sign # deploy
