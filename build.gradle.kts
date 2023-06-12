@@ -6,7 +6,6 @@ plugins {
     kotlin("plugin.serialization") version "1.8.22"
     `maven-publish`
     signing
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 
 group = "nl.sanderdijkhuis"
