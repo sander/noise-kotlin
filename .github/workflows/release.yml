@@ -9,7 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    environment: central
+    environment:
+      name: central
+      url: https://central.sonatype.com/artifact/nl.sanderdijkhuis/noise-kotlin
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # ratchet:actions/checkout@v3
       - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # ratchet:actions/setup-java@v3
@@ -21,6 +23,7 @@ jobs:
       - run: gpg --list-secret-keys --keyid-format LONG
       - run: |
           mkdir -p ~/.gradle
+          touch $PROPERTIES
           echo "signing.keyId=${{ secrets.OSSRH_GPG_KEY_ID }}" >> $PROPERTIES
           echo "signing.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}" >> $PROPERTIES
           echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> $PROPERTIES
