@@ -23,10 +23,8 @@ jobs:
       - run: gpg --list-secret-keys --keyid-format LONG
       - run: |
           mkdir -p ~/.gradle
-          touch $PROPERTIES
-          echo "signing.keyId=${{ secrets.OSSRH_GPG_KEY_ID }}" >> $PROPERTIES
-          echo "signing.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}" >> $PROPERTIES
-          echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> $PROPERTIES
-        env:
-          PROPERTIES: ~/.gradle/gradle.properties
+          touch ~/.gradle/gradle.properties
+          echo "signing.keyId=${{ vars.OSSRH_GPG_KEY_ID }}" >> ~/.gradle/gradle.properties
+          echo "signing.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}" >> ~/.gradle/gradle.properties
+          echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> ~/.gradle/gradle.properties
       - run: ./gradlew sign # deploy
