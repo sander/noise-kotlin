@@ -20,7 +20,7 @@ jobs:
           java-version: 8
       - uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # ratchet:gradle/gradle-build-action@v2
       - run: echo "${{ secrets.OSSRH_GPG_SECRET_KEY }}" | gpg --batch --import
-      - run: gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
+      - run: echo "${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}" | gpg --batch --yes --keyring secring.gpg --export-secret-keys --passphrase-fd 0 --pinentry-mode loopback -a ${{ vars.OSSRH_GPG_KEY_ID }} > ~/.gnupg/secring.gpg
       - run: gpg --list-secret-keys --keyid-format LONG
       - run: |
           mkdir -p ~/.gradle
