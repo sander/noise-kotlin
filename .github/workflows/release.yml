@@ -1,0 +1,19 @@
+name: Release
+on:
+  #release:
+  #  types: [created]
+  pull_request:
+    branches: [main]
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # ratchet:actions/checkout@v3
+      - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # ratchet:actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 8
+      - uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # ratchet:gradle/gradle-build-action@v2
+      - run: ./gradlew publish
