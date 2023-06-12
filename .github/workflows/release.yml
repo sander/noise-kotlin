@@ -31,4 +31,3 @@ jobs:
           echo "signing.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}" >> ~/.gradle/gradle.properties
           echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> ~/.gradle/gradle.properties
       - run: ./gradlew publish
-      - run: ./gradlew closeAndReleaseStagingRepository
