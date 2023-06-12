@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "nl.sanderdijkhuis"
-version = "0.9.0"
+version = "0.10.0"
 
 repositories {
     mavenCentral()
