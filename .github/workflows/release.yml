@@ -16,4 +16,6 @@ jobs:
           distribution: zulu
           java-version: 8
       - uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629 # ratchet:gradle/gradle-build-action@v2
-      - run: ./gradlew sign
+      - run: echo "${{ secrets.OSSRH_GPG_SECRET_KEY }}" | gpg --batch --import
+      - run: gpg --list-secret-keys --keyid-format LONG
+      #- run: ./gradlew sign # deploy
