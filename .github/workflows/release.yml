@@ -1,7 +1,7 @@
 name: Release
 on:
-  release:
-    types: [created]
+  push:
+    branches: ["main"]
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -9,7 +9,7 @@ jobs:
       contents: read
     environment:
       name: central
-      url: https://central.sonatype.com/artifact/nl.sanderdijkhuis/noise-kotlin
+      url: https://central.sonatype.com/artifact/nl.sanderdijkhuis/noise-kotlin # TODO different URL for SNAPSHOT versions
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # ratchet:actions/checkout@v3
       - uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # ratchet:actions/setup-java@v3
