@@ -6,10 +6,11 @@ plugins {
     kotlin("plugin.serialization") version "1.8.22"
     `maven-publish`
     signing
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 
 group = "nl.sanderdijkhuis"
-version = "0.11.0-SNAPSHOT"
+version = "0.12.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -96,6 +97,15 @@ publishing {
             val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
             url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
             credentials(PasswordCredentials::class.java)
+        }
+    }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
         }
     }
 }

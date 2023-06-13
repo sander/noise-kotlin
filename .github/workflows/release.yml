@@ -25,8 +25,8 @@ jobs:
         run: |
           mkdir -p ~/.gradle
           touch ~/.gradle/gradle.properties
-          echo "mavenUsername=${{ vars.OSSRH_USER }}" >> ~/.gradle/gradle.properties
-          echo "mavenPassword=${{ secrets.OSSRH_PASSWORD }}" >> ~/.gradle/gradle.properties
+          echo "sonatypeUsername=${{ vars.OSSRH_USER }}" >> ~/.gradle/gradle.properties
+          echo "sonatypePassword=${{ secrets.OSSRH_PASSWORD }}" >> ~/.gradle/gradle.properties
           echo "signing.keyId=${{ vars.OSSRH_GPG_KEY_ID }}" >> ~/.gradle/gradle.properties
           echo "signing.password=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}" >> ~/.gradle/gradle.properties
           echo "signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg" >> ~/.gradle/gradle.properties
