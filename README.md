@@ -4,6 +4,8 @@
 
 **Noise for Kotlin** enables implementation of [Noise](https://noiseprotocol.org) protocols based on Diffie-Hellman key agreement.
 
+> **Warning**: This project has not been independently audited. Help is welcome to increase security or to make risks explicit. Also see the [Security policy](SECURITY.md).
+
 ## API documentation
 
 See the [API docs](https://sander.github.io/noise-kotlin/api/) about the latest release or use the Gradle `dokkaHtml` task for a local copy about any version.
