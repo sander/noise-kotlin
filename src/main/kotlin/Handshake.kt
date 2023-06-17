@@ -8,6 +8,16 @@ import nl.sanderdijkhuis.noise.data.Data
 import nl.sanderdijkhuis.noise.data.Size
 import nl.sanderdijkhuis.noise.data.State
 
+/**
+ * Encompasses all Noise protocol handshake state required to read and write messages.
+ *
+ * Start with [initialize], supplying one of the implemented patterns:
+ *
+ * - [Noise_NK_25519_ChaChaPoly_SHA256]
+ * - [Noise_XN_25519_ChaChaPoly_SHA256]
+ *
+ * Proposals to add more patterns or generate correct patterns dynamically are welcomed.
+ */
 data class Handshake(
     val role: Role,
     val symmetry: Symmetry,
@@ -19,12 +29,14 @@ data class Handshake(
     val trustedStaticKeys: Set<PublicKey> = emptySet()
 ) : MessageType {
 
+    /** A handshake pattern. */
     data class Pattern(
         val name: String,
         val preSharedMessagePatterns: List<List<Token>>,
         val messagePatterns: List<List<Token>>
     )
 
+    /** Message pattern token, indicating which keys are sent and which key agreements are performed. */
     enum class Token {
         E, S, EE, ES, SE, SS
     }
@@ -37,6 +49,7 @@ data class Handshake(
     private fun State<Handshake, Data>.append(f: (Symmetry) -> State<Symmetry, Data>?) =
         f(value.symmetry)?.let { s -> State(value.copy(symmetry = s.value), result + s.result) }
 
+    /** Returns a handshake message only if this is appropriate given the pattern and state. */
     fun writeMessage(payload: Payload): State<out MessageType, Data>? =
         messagePatterns.first().fold(State(this, Data.empty) as State<Handshake, Data>?) { state, token ->
             state?.let { s ->
@@ -64,6 +77,7 @@ data class Handshake(
                 else State(s.value.copy(messagePatterns = rest), s.result)
             }
 
+    /** Returns a handshake message payload only if this is appropriate given the pattern and state. */
     fun readMessage(data: Data): State<out MessageType, Payload>? =
         messagePatterns.first().fold(State(this, data) as State<Handshake, Data>?) { state, token ->
             state?.let { s ->
@@ -108,6 +122,7 @@ data class Handshake(
 
     companion object {
 
+        /** Returns initial handshake state only if sufficient keys are provided. */
         fun initialize(
             cryptography: Cryptography,
             pattern: Pattern,

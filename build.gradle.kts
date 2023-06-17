@@ -1,3 +1,5 @@
+import java.net.URL
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -7,6 +9,7 @@ plugins {
     `maven-publish`
     signing
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    id("org.jetbrains.dokka") version "1.8.20"
 }
 
 group = "nl.sanderdijkhuis"
@@ -40,6 +43,21 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<DokkaTask> {
+    dokkaSourceSets {
+        named("main") {
+            moduleName.set("Noise for Kotlin")
+            includes.from("src/main/README.md")
+            skipDeprecated.set(true)
+            sourceLink {
+                localDirectory.set(file("src/main/kotlin"))
+                remoteUrl.set(URL("https://github.com/sander/noise-kotlin/tree/main/src/main/kotlin"))
+                remoteLineSuffix.set("#L")
+            }
+        }
+    }
 }
 
 tasks.withType<KotlinCompile> {

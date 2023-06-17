@@ -15,6 +15,12 @@ jobs:
       - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:81af1075dc4ceb54f1c87ac9ff6a9ebe43626c59913f01810f5be77f4eb67301" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.4.0
         with:
           args: "check .github/workflows/codeql.yml"
+      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:81af1075dc4ceb54f1c87ac9ff6a9ebe43626c59913f01810f5be77f4eb67301" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.4.0
+        with:
+          args: "check .github/workflows/release.yml"
+      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:81af1075dc4ceb54f1c87ac9ff6a9ebe43626c59913f01810f5be77f4eb67301" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.4.0
+        with:
+          args: "check .github/workflows/pages.yml"
   build:
     runs-on: ubuntu-latest
     steps:
