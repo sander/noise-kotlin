@@ -2,6 +2,7 @@ package nl.sanderdijkhuis.noise.data
 
 import kotlin.experimental.xor
 
+/** Immutable binary data. */
 data class Data(val value: ByteArray) {
 
     init {

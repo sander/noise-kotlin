@@ -2,6 +2,7 @@ package nl.sanderdijkhuis.noise.cryptography
 
 import nl.sanderdijkhuis.noise.data.Data
 
+/** Provide the specified algorithm implementations. */
 interface Cryptography {
 
     /** X25519 from [RFC 7748](https://www.rfc-editor.org/rfc/rfc7748) */

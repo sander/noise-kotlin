@@ -1,5 +1,6 @@
 package nl.sanderdijkhuis.noise.data
 
+/** Size of a [Data] object. */
 @JvmInline
 value class Size(val value: UShort) {
 

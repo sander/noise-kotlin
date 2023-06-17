@@ -3,6 +3,7 @@ package nl.sanderdijkhuis.noise
 import nl.sanderdijkhuis.noise.cryptography.*
 import nl.sanderdijkhuis.noise.data.State
 
+/** Encompasses all Noise protocol cipher state required to encrypt and decrypt data. */
 data class Cipher(val cryptography: Cryptography, val key: CipherKey? = null, val nonce: Nonce = Nonce.zero) {
 
     fun encrypt(associatedData: AssociatedData, plaintext: Plaintext): State<Cipher, Ciphertext> =

@@ -5,6 +5,9 @@ import nl.sanderdijkhuis.noise.data.Data
 import nl.sanderdijkhuis.noise.data.Size
 import nl.sanderdijkhuis.noise.data.State
 
+/**
+ * Encompasses all Noise protocol symmetric cryptography state required during handshakes.
+ */
 data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash: HandshakeHash) {
 
     @JvmInline
@@ -72,7 +75,7 @@ data class Symmetry(val cipher: Cipher, val key: ChainingKey, val handshakeHash:
 
         private val BLOCK_SIZE = Size(64u)
 
-        /** https://www.ietf.org/rfc/rfc2104.txt */
+        /** [RFC 2104](https://www.rfc-editor.org/rfc/rfc2104.html) */
         private fun authenticateMessage(cryptography: Cryptography, key: Digest, data: Data) = let {
 
             fun block(init: (Int) -> Byte) = Data(ByteArray(BLOCK_SIZE.integerValue, init))
