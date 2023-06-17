@@ -158,21 +158,17 @@ data class Handshake(
         }
 
         val Noise_XN_25519_ChaChaPoly_SHA256 =
-            Handshake.Pattern(
+            Pattern(
                 "Noise_XN_25519_ChaChaPoly_SHA256",
                 listOf(),
-                listOf(
-                    listOf(Handshake.Token.E),
-                    listOf(Handshake.Token.E, Handshake.Token.EE),
-                    listOf(Handshake.Token.S, Handshake.Token.SE)
-                )
+                listOf(listOf(E), listOf(E, EE), listOf(S, SE))
             )
 
         val Noise_NK_25519_ChaChaPoly_SHA256 =
-            Handshake.Pattern(
+            Pattern(
                 "Noise_NK_25519_ChaChaPoly_SHA256",
-                listOf(listOf(), listOf(Handshake.Token.S)),
-                listOf(listOf(Handshake.Token.E, Handshake.Token.ES), listOf(Handshake.Token.E, Handshake.Token.EE))
+                listOf(listOf(), listOf(S)),
+                listOf(listOf(E, ES), listOf(E, EE))
             )
     }
 }
