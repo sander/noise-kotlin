@@ -1,10 +1,8 @@
 # Security policy
 
-> **Warning**: Do not use this code in production. Expect vulnerabilities. See the [README](README.md) for details.
-
 ## Supported versions
 
-Currently only pre-release and snapshot versions are available. Any vulnerability should be mitigated in a next pre-release version.
+Currently only the latest (pre-)release version is maintained. Any vulnerability should be mitigated in a next pre-release version.
 
 ## Reporting a vulnerability
 

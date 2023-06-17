@@ -1,13 +1,12 @@
 # Noise for Kotlin
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.sanderdijkhuis/noise-kotlin/badge.svg?style=flat-square&gav=true)](https://maven-badges.herokuapp.com/maven-central/nl.sanderdijkhuis/noise-kotlin)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.sanderdijkhuis/noise-kotlin/badge.svg?style=flat-square&gav=true)](https://central.sonatype.com/artifact/nl.sanderdijkhuis/noise-kotlin/)
 
-**Noise for Kotlin** contains example code for implementing [Noise](https://noiseprotocol.org) protocols based on Diffie-Hellman key agreement. It may evolve into a usable library. [Contact me](mailto:mail@sanderdijkhuis.nl) if you are interested in helping out to realize this.
+**Noise for Kotlin** enables implementation of [Noise](https://noiseprotocol.org) protocols based on Diffie-Hellman key agreement.
 
-> **Warning**: Some reasons why you **may not** use any of this code in production yet:
->
-> - It has not yet been reviewed for secure engineering practices.
-> - It leaves your secrets on the heap, up for grabs.
+## API documentation
+
+See the [API docs](https://sander.github.io/noise-kotlin/api/) about the latest release or use the Gradle `dokkaHtml` task for a local copy about any version.
 
 ## How to build
 
@@ -36,7 +35,9 @@ Then, implement [`Cryptography`](src/main/kotlin/cryptography/Cryptography.kt) f
 - Support only Curve25519, ChaCha20-Poly1305, and SHA-256 to reduce the need to choose and since these are available on most platforms.
     - Consequence: it should be easy to use with [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html).
 - Use only Kotlin types and functions, and nothing directly from Java SE or libraries.
-    - Consequence: all dangerous cryptography implementation is behind an interface, which users need to implement using native platform functions.
+    - Consequence: all cryptographic function dependency implementation is behind an interface, which users need to implement using native platform functions.
+- Do not include particular masking, encryption, or zeroization functionality for sensitive data, to avoid disproportional complexity.
+    - Consequence: run with sufficiently protected volatile memory and protect heap dump data from unauthorized access.
 
 ## Test vectors
 
