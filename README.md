@@ -22,7 +22,7 @@ See [HandshakeTest](src/test/kotlin/HandshakeTest.kt) for some example handshake
 
 Instead of `test`, use `jar` to create a JAR in `build/distributions`.
 
-## How to use in a prototype
+## How to use in an application
 
 Add the [`noise-kotlin` dependency](https://central.sonatype.com/artifact/nl.sanderdijkhuis/noise-kotlin) to your project.
 
