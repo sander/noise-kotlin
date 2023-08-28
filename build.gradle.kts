@@ -3,7 +3,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.22"
+    kotlin("jvm") version "1.9.10"
     id("org.jetbrains.kotlinx.kover") version "0.7.2"
     kotlin("plugin.serialization") version "1.8.22"
     `maven-publish`
