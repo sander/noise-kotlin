@@ -17,17 +17,17 @@ jobs:
       name: pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # ratchet:actions/checkout@v3
-      - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # ratchet:actions/setup-java@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # ratchet:actions/checkout@v4
+      - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # ratchet:actions/setup-java@v4
         with:
           distribution: zulu
           java-version: 8
-      - uses: gradle/gradle-build-action@b5126f31dbc19dd434c3269bf8c28c315e121da2 # ratchet:gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@b5126f31dbc19dd434c3269bf8c28c315e121da2 # ratchet:gradle/actions/setup-gradle@v3
       - run: ./gradlew dokkaHtml
-      - uses: actions/configure-pages@f156874f8191504dae5b037505266ed5dda6c382 # ratchet:actions/configure-pages@v3
+      - uses: actions/configure-pages@f156874f8191504dae5b037505266ed5dda6c382 # ratchet:actions/configure-pages@v4
       - run: |
           mkdir -p _site
           mv build/dokka/html _site/api
-      - uses: actions/upload-pages-artifact@84bb4cd4b733d5c320c9c9cfbc354937524f4d64 # ratchet:actions/upload-pages-artifact@v1
-      - uses: actions/deploy-pages@9dbe3824824f8a1377b8e298bafde1a50ede43e5 # ratchet:actions/deploy-pages@v2
+      - uses: actions/upload-pages-artifact@84bb4cd4b733d5c320c9c9cfbc354937524f4d64 # ratchet:actions/upload-pages-artifact@v3
+      - uses: actions/deploy-pages@9dbe3824824f8a1377b8e298bafde1a50ede43e5 # ratchet:actions/deploy-pages@v4
         id: deployment
