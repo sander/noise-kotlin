@@ -7,10 +7,12 @@ import nl.sanderdijkhuis.noise.cryptography.Plaintext
 import nl.sanderdijkhuis.noise.data.Data
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
+import kotlin.test.assertNull
 
 @OptIn(ExperimentalStdlibApi::class)
 class CipherTest {
     private val data = AssociatedData(Data.empty)
+    private val otherData = AssociatedData(Data("other".toByteArray()))
     private val plaintext = Plaintext(Data.empty)
 
     @Test
@@ -26,6 +28,13 @@ class CipherTest {
         val (cipher, ciphertext) = cipher(nonceTooHighToEncrypt).encrypt(data, plaintext)
 
         assertThrows<IllegalStateException> { cipher.decrypt(data, ciphertext) }
+    }
+
+    @Test
+    fun `signals an error to the caller upon authentication failure during decryption`() {
+        val (cipher, ciphertext) = cipher(Nonce.zero).encrypt(data, plaintext)
+
+        assertNull(cipher.decrypt(otherData, ciphertext))
     }
 
     private fun cipher(nonce: Nonce) =
