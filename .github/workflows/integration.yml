@@ -9,25 +9,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # ratchet:actions/checkout@v3
-      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:81af1075dc4ceb54f1c87ac9ff6a9ebe43626c59913f01810f5be77f4eb67301" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.4.0
+      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:d59bf320f683dd8146dcbeefb5a98adeffa380f8d5080e211d55b9f9375fef19" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.5.1
         with:
           args: "check .github/workflows/integration.yml"
-      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:81af1075dc4ceb54f1c87ac9ff6a9ebe43626c59913f01810f5be77f4eb67301" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.4.0
+      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:d59bf320f683dd8146dcbeefb5a98adeffa380f8d5080e211d55b9f9375fef19" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.5.1
         with:
           args: "check .github/workflows/codeql.yml"
-      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:81af1075dc4ceb54f1c87ac9ff6a9ebe43626c59913f01810f5be77f4eb67301" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.4.0
+      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:d59bf320f683dd8146dcbeefb5a98adeffa380f8d5080e211d55b9f9375fef19" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.5.1
         with:
           args: "check .github/workflows/release.yml"
-      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:81af1075dc4ceb54f1c87ac9ff6a9ebe43626c59913f01810f5be77f4eb67301" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.4.0
+      - uses: "docker://ghcr.io/sethvargo/ratchet@sha256:d59bf320f683dd8146dcbeefb5a98adeffa380f8d5080e211d55b9f9375fef19" # ratchet:docker://ghcr.io/sethvargo/ratchet:0.5.1
         with:
           args: "check .github/workflows/pages.yml"
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # ratchet:actions/checkout@v3
-      - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # ratchet:actions/setup-java@v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # ratchet:actions/checkout@v4
+      - uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # ratchet:actions/setup-java@v4
         with:
           distribution: zulu
           java-version: 8
-      - uses: gradle/gradle-build-action@b5126f31dbc19dd434c3269bf8c28c315e121da2 # ratchet:gradle/gradle-build-action@v2
+      - uses: gradle/actions/setup-gradle@ec92e829475ac0c2315ea8f9eced72db85bb337a # ratchet:gradle/actions/setup-gradle@v3
       - run: ./gradlew check
