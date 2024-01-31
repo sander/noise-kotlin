@@ -9,7 +9,7 @@ value class Nonce(val value: ULong) {
 
     val bytes: ByteArray get() = SIZE.byteArray { (value shr (it * Byte.SIZE_BITS)).toByte() }
 
-    fun increment(): Nonce? = if (value == ULong.MAX_VALUE) null else Nonce(value + 1uL)
+    fun increment(): Nonce? = if (value >= ULong.MAX_VALUE - 1uL) null else Nonce(value + 1uL)
 
     companion object {
 
