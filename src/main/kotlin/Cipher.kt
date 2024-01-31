@@ -25,8 +25,7 @@ data class Cipher(val cryptography: Cryptography, val key: CipherKey? = null, va
     fun decrypt(associatedData: AssociatedData, ciphertext: Ciphertext): State<Cipher, Plaintext>? =
         nonce.increment().let { n ->
             checkNotNull(n) { "Too many messages" }
-            key?.let {
-                cryptography.decrypt(it, nonce, associatedData, ciphertext)?.let { p -> State(copy(nonce = n), p) }
-            } ?: State(this, ciphertext.plaintext)
+            if (key == null) return State(this, ciphertext.plaintext)
+            cryptography.decrypt(key, nonce, associatedData, ciphertext)?.let { p -> State(copy(nonce = n), p) }
         }
 }
