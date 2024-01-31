@@ -25,6 +25,11 @@ class NonceTest {
     }
 
     @Test
+    fun `never increment to 2^64-1 which is reserved for other use`() {
+        assertNull(Nonce(ULong.MAX_VALUE - 1uL).increment())
+    }
+
+    @Test
     fun testEncodeLittleEndian() {
         assertEquals((0uL).toLong(), 0L)
         assertEquals(ULong.MAX_VALUE.toLong(), -1L)
