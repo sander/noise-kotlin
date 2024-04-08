@@ -8,7 +8,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.22"
     `maven-publish`
     signing
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("org.jetbrains.dokka") version "1.9.10"
 }
 
