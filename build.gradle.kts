@@ -22,7 +22,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-    testImplementation("org.bouncycastle:bcprov-jdk18on:1.77")
+    testImplementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
     testImplementation("org.bouncycastle:bcpkix-jdk18on:1.77")
 }
 
